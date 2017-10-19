@@ -1,0 +1,170 @@
+%\VignetteIndexEntry{practical2}
+%\VignetteEngine{Sweave}
+
+
+\documentclass[a4paper,justified,openany]{tufte-handout}\usepackage[]{graphicx}\usepackage[]{color}
+%% maxwidth is the original width if it is less than linewidth
+%% otherwise use linewidth (to make sure the graphics do not exceed the margin)
+\makeatletter
+\def\maxwidth{ %
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+\makeatother
+
+\definecolor{fgcolor}{rgb}{0.345, 0.345, 0.345}
+\newcommand{\hlnum}[1]{\textcolor[rgb]{0.686,0.059,0.569}{#1}}%
+\newcommand{\hlstr}[1]{\textcolor[rgb]{0.192,0.494,0.8}{#1}}%
+\newcommand{\hlcom}[1]{\textcolor[rgb]{0.678,0.584,0.686}{\textit{#1}}}%
+\newcommand{\hlopt}[1]{\textcolor[rgb]{0,0,0}{#1}}%
+\newcommand{\hlstd}[1]{\textcolor[rgb]{0.345,0.345,0.345}{#1}}%
+\newcommand{\hlkwa}[1]{\textcolor[rgb]{0.161,0.373,0.58}{\textbf{#1}}}%
+\newcommand{\hlkwb}[1]{\textcolor[rgb]{0.69,0.353,0.396}{#1}}%
+\newcommand{\hlkwc}[1]{\textcolor[rgb]{0.333,0.667,0.333}{#1}}%
+\newcommand{\hlkwd}[1]{\textcolor[rgb]{0.737,0.353,0.396}{\textbf{#1}}}%
+\let\hlipl\hlkwb
+
+\usepackage{framed}
+\makeatletter
+\newenvironment{kframe}{%
+ \def\at@end@of@kframe{}%
+ \ifinner\ifhmode%
+  \def\at@end@of@kframe{\end{minipage}}%
+  \begin{minipage}{\columnwidth}%
+ \fi\fi%
+ \def\FrameCommand##1{\hskip\@totalleftmargin \hskip-\fboxsep
+ \colorbox{shadecolor}{##1}\hskip-\fboxsep
+     % There is no \\@totalrightmargin, so:
+     \hskip-\linewidth \hskip-\@totalleftmargin \hskip\columnwidth}%
+ \MakeFramed {\advance\hsize-\width
+   \@totalleftmargin\z@ \linewidth\hsize
+   \@setminipage}}%
+ {\par\unskip\endMakeFramed%
+ \at@end@of@kframe}
+\makeatother
+
+\definecolor{shadecolor}{rgb}{.97, .97, .97}
+\definecolor{messagecolor}{rgb}{0, 0, 0}
+\definecolor{warningcolor}{rgb}{1, 0, 1}
+\definecolor{errorcolor}{rgb}{1, 0, 0}
+\newenvironment{knitrout}{}{} % an empty environment to be redefined in TeX
+
+\usepackage{alltt}
+
+\usepackage{amsmath}
+\usepackage{graphicx}
+\setkeys{Gin}{width=\linewidth,totalheight=\textheight,keepaspectratio}
+\graphicspath{{graphics/}}
+\title{Predictive Analytics: practical 2 }
+\date{} % if the \date{} command is left out, the current date will be used
+\usepackage{booktabs}
+\usepackage{units}
+\usepackage{fancyvrb}
+\fvset{fontsize=\normalsize}
+\newcommand{\cc}{\texttt}
+\graphicspath{{../graphics/}}
+\setcounter{secnumdepth}{2}
+\usepackage{microtype}
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\begin{document}
+
+\maketitle% this prints the handout title, author, and date
+
+
+
+\section*{Cross validation and the bootstrap}
+\begin{itemize}
+\item Fit a linear regression model to the \cc{cars2010} data set with \cc{FE} as the response, using \cc{EngDispl}, \cc{NumCyl} and \cc{NumGears} as predictors.\marginnote{The data set can be loaded \cc{data("FuelEconomy", package = "AppliedPredictiveModeling")}.}
+
+\item What is the training error rate (RMSE) for this model?\marginnote{Hint: The training error can be found by taking the square root of the average square residuals. The \cc{sqrt} and \cc{resid} functions may be useful.}
+
+\item Re--train your model using the validation set approach to estimate a test RMSE, make your validation set equivalent to half of the entire data set.
+
+\item How does this compare to the training error that we estimated above?
+
+\item Go through the same process using the different methods for estimating test error. That is leave one out and $k$--fold crossvalidation as well as bootstrapping.\marginnote{$10$--fold cross validation can be shown to be a good choice for almost any situation.}
+
+\item How do these estimates compare with the validation set approach?
+
+\item The object returned by \cc{train} also contains timing information that can be accessed via the \cc{times} component of the list.\marginnote{The \cc{\$} notation can be used pick a single list component.} Which of the methods is fastest?
+
+\item Using k--fold cross validation to estimate test error investigate how the number of folds effects the resultant estimates and computation time.
+
+\item Experiment with adding terms to the model, transformations of the predictors and interactions say and use cross validation to estimate test error for each. What is the best model you can find? You can still use the \cc{validate} and \cc{mark} functions to look at how your models fair on the unseen data. 
+\end{itemize}
+
+\section*{Penalised regression}
+
+The \cc{diabetes} data set in the \cc{lars} package contains measurements of a number of predictors to model a response $y$, a measure of disease progression. There are other columns in the data set which contain interactions so we will extract just the predictors and the response. The data has already been normalized.
+
+% <<>>=
+% data(diabetes, package = "lars")
+% 
+% diabetesdata = cbind(diabetes$x,"y" = diabetes$y)
+% # shortcut to create a model formula with all 2 way 
+% # interactions and square terms.
+% modelFormula = as.formula(paste("y~(.)^2 + ",
+%   paste("I(",colnames(diabetesdata[,1:10]),"^2)", 
+%         collapse = "+",sep = "")))
+% 
+% @
+
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{## load the data in }
+\hlkwd{data}\hlstd{(diabetes,} \hlkwc{package} \hlstd{=} \hlstr{"lars"}\hlstd{)}
+\hlstd{diabetesdata} \hlkwb{=} \hlkwd{cbind}\hlstd{(diabetes}\hlopt{$}\hlstd{x,}\hlstr{"y"} \hlstd{= diabetes}\hlopt{$}\hlstd{y)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+
+\begin{itemize}
+\item Try fitting a lasso, ridge and elastic net model using all of the main effects, pairwise interactions and square terms from each of the predictors.\sidenote{Hint: see notes for shortcut on creating model formula. Also be aware that if the predictor is a factor a polynomial term doesn't make sense}
+
+\marginnote{\cc{fraction = 0} is the same as the null model.}
+\marginnote{ 
+\cc{$y \sim (.) \wedge 2$}
+is short hand for a model that includes pairwise interactions for each predictor, so if we use this we should only need to add the square terms}
+
+% <<warning = FALSE, message = FALSE, echo = FALSE>>=
+% m.lasso = train(modelFormula, data = diabetesdata, 
+%         method = "lasso", 
+%         tuneGrid = data.frame(fraction = seq(0,1,0.05)))
+% @
+% 
+% <<warning = FALSE, message = FALSE, echo = FALSE>>=
+% m.lasso = train(modelFormula, data = diabetesdata, 
+%         method = "lasso", 
+%         tuneGrid = data.frame(fraction = seq(0,1,0.05)))
+% @
+
+
+  \item Try to narrow in on the region of lowest RMSE for each model, don't forget about the \cc{tuneGrid} argument to the train function.
+
+\noindent We can view the coefficients via
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{coef} \hlkwb{=} \hlkwd{predict}\hlstd{(mLASSO}\hlopt{$}\hlstd{finalModel,}
+  \hlkwc{mode} \hlstd{=} \hlstr{"fraction"}\hlstd{,}
+  \hlkwc{s} \hlstd{= mLASSO}\hlopt{$}\hlstd{bestTune}\hlopt{$}\hlstd{fraction,}\hlcom{# which ever fraction was chosen as best}
+  \hlkwc{type} \hlstd{=} \hlstr{"coefficients"}
+\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+
+  \item How many features have been chosen by the \cc{lasso} and \cc{enet} models?
+
+  \item How do these models compare to principal components and partial least squares regression?
+
+\end{itemize}
+
+\end{document}
+

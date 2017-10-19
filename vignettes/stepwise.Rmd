@@ -1,0 +1,52 @@
+---
+title: "Subset Selection"
+author: "Colin Gillespie"
+date: "`r Sys.Date()`"
+vignette: >
+   %\VignetteEngine{knitr::rmarkdown}
+   %\VignetteIndexEntry{3. Subset Selection}
+output: knitr:::html_vignette
+---
+
+## Best subset selection
+
+In order to perform best subset selection we need to fit a separate regression model to each possible combination of predictors. 
+
+  * The number of possible subsets grows exponentially with the number of predictors -- 20 predictors gives a total of 1,048,576 possible models
+  * Modern computers do help but anything bigger than 40 predictors ($\approx 1.1 \times 10^{12}$ models) is becoming un--feasible
+
+The best model is then chosen according to some criteria, typically  AIC. Some care must be taken as $R^{2}$ will always increase as we add predictors. In addition a high $R^{2}$, or a low $RSS$ are synonymous with a low training error rate where we are typically interested in a low test error rate. A low training error rate does not necessarily imply a good predictive model.
+
+## Forward step--wise selection
+
+In addition to computational issues best subset selection can suffer from statistical problems. The larger the search space the higher the probability of finding models that look good based on the training data, even if they have no predictive power.
+
+Forward step--wise selection is a computationally efficient alternative to best subset following a procedure along the lines of algorithm:
+
+  1. Let $M_{0}$ denote the \emph{null} model, which contains no predictors.
+  2. For $k = 0, \ldots, p-1$:
+    1. Consider all $p-k$ models that add a single predictor to the model $M_{k}$
+    2. Choose the best among these models and call it $M_{k}$
+  3. Select a single best from among $M_{0}, \ldots, M_{p}$.
+
+Unlike best subset selection which requires $2^{p}$ models to be fit forward step--wise selection requires only $1 + p(p+1)/2$ models. On a model with 20 predictors this means fitting only 211 models, compared to the 1,048,576 in best subset. Be aware that whilst in practice it often does well, it doesn't guarantee to find the best model possible model as not all possible models are evaluated.
+
+## Backward step--wise selection
+
+Backward step--wise selection, like the forward step--wise algorithm, provides an efficient alternative to best subset. However rather than starting with the null model and adding a single predictor at a time, we start with the full least squares model, containing all the predictors and remove a single predictor at each iteration. 
+
+Like forward step--wise it requires that $1+p(p+1)/2$ models are fit however there is an additional requirement that the number of samples $n$ is larger than the number of predictors $p$ so that the full model can be fit.
+
+There are a few methods for stepwise selection for linear regression models such as `lmStepAIC` although this sort of feature selection is typically discouraged. Methods that intrinsically perform feature selection such as lasso, elastic net or tree based methods are often preferred. 
+
+For models that don't perform a subset selection, `caret` has a feature extraction algorithm that is based on cross validation estimates of test RMSE. 
+
+```{r eval=FALSE}
+library("caret")
+data(BostonHousing, package = "mlbench")
+## an rfeControl object is the analog to trainControl in the
+## recursive feature elimination algorithm
+rc = rfeControl(method = "cv")
+rfe(medv~., data = BostonHousing, sizes = 4:6, rfeControl = rc, 
+    trControl = trainControl(method = "cv"), method = "lm")
+```

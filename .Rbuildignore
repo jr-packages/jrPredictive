@@ -1,0 +1,6 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^.travis.yml$
+^deploy.sh$
+^README.md$
+knitr_cache

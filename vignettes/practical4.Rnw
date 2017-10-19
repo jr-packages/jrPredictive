@@ -1,0 +1,215 @@
+%\VignetteIndexEntry{practical4}
+%\VignetteEngine{Sweave}
+
+
+\documentclass[a4paper,justified,openany]{tufte-handout}\usepackage[]{graphicx}\usepackage[]{color}
+%% maxwidth is the original width if it is less than linewidth
+%% otherwise use linewidth (to make sure the graphics do not exceed the margin)
+\makeatletter
+\def\maxwidth{ %
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+\makeatother
+
+\definecolor{fgcolor}{rgb}{0.345, 0.345, 0.345}
+\newcommand{\hlnum}[1]{\textcolor[rgb]{0.686,0.059,0.569}{#1}}%
+\newcommand{\hlstr}[1]{\textcolor[rgb]{0.192,0.494,0.8}{#1}}%
+\newcommand{\hlcom}[1]{\textcolor[rgb]{0.678,0.584,0.686}{\textit{#1}}}%
+\newcommand{\hlopt}[1]{\textcolor[rgb]{0,0,0}{#1}}%
+\newcommand{\hlstd}[1]{\textcolor[rgb]{0.345,0.345,0.345}{#1}}%
+\newcommand{\hlkwa}[1]{\textcolor[rgb]{0.161,0.373,0.58}{\textbf{#1}}}%
+\newcommand{\hlkwb}[1]{\textcolor[rgb]{0.69,0.353,0.396}{#1}}%
+\newcommand{\hlkwc}[1]{\textcolor[rgb]{0.333,0.667,0.333}{#1}}%
+\newcommand{\hlkwd}[1]{\textcolor[rgb]{0.737,0.353,0.396}{\textbf{#1}}}%
+\let\hlipl\hlkwb
+
+\usepackage{framed}
+\makeatletter
+\newenvironment{kframe}{%
+ \def\at@end@of@kframe{}%
+ \ifinner\ifhmode%
+  \def\at@end@of@kframe{\end{minipage}}%
+  \begin{minipage}{\columnwidth}%
+ \fi\fi%
+ \def\FrameCommand##1{\hskip\@totalleftmargin \hskip-\fboxsep
+ \colorbox{shadecolor}{##1}\hskip-\fboxsep
+     % There is no \\@totalrightmargin, so:
+     \hskip-\linewidth \hskip-\@totalleftmargin \hskip\columnwidth}%
+ \MakeFramed {\advance\hsize-\width
+   \@totalleftmargin\z@ \linewidth\hsize
+   \@setminipage}}%
+ {\par\unskip\endMakeFramed%
+ \at@end@of@kframe}
+\makeatother
+
+\definecolor{shadecolor}{rgb}{.97, .97, .97}
+\definecolor{messagecolor}{rgb}{0, 0, 0}
+\definecolor{warningcolor}{rgb}{1, 0, 1}
+\definecolor{errorcolor}{rgb}{1, 0, 0}
+\newenvironment{knitrout}{}{} % an empty environment to be redefined in TeX
+
+\usepackage{alltt}
+
+\usepackage{amsmath}
+% Set up the images/graphics package
+\usepackage{graphicx}
+\setkeys{Gin}{width=\linewidth,totalheight=\textheight,keepaspectratio}
+\graphicspath{{graphics/}}
+\title{Predictive Analytics: practical 4}
+\date{} % if the \date{} command is left out, the current date will be used
+\usepackage{booktabs}
+\usepackage{units}
+\usepackage{fancyvrb}
+\fvset{fontsize=\normalsize}
+\newcommand{\cc}{\texttt}
+\graphicspath{{../graphics/}}
+\setcounter{secnumdepth}{2}
+\usepackage{microtype}
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\begin{document}
+% \SweaveOpts{concordance=TRUE}
+\maketitle% this prints the handout title, author, and date
+
+
+
+\section*{Advanced models}
+
+The final practical is intended to let you have a go fitting models to any of the data sets that we have seen so far. Or indeed feel free to use your own data sets.
+\begin{itemize}
+\item One possible avenue to explore is the \cc{cars2010} data set from the first practical.
+\item You could use the validate and mark functions to see how the more complex models compare with the simpler models from yesterday and to see who can make the best predictive model.
+\item Models to try could be the regression trees, neural networks, support vector machines, anything that we have covered in the notes. Remember to visualise boundaries using the \cc{plot3d} and \cc{boundary\_plot} functions.
+\end{itemize}
+
+\noindent Alternatively you could pick a data set and try to follow the worked example and find optimal sets of predictors for your chosen response.\marginnote{If you have a classification response you would typically optimize for the probability of the event.}
+
+In addition the website 
+\begin{center}
+\url{http://topepo.github.io/caret/modelList.html}
+\end{center}
+contains a list of models currently supported by \cc{caret}. If one of these is suitable for you, you could try to use a model we haven't directly covered in the course. The syntax and model fitting procedure is the same for all of them. This was one of the reasons we use \cc{caret} in the first place.
+
+\section*{Advanced}
+
+\marginnote{This section is intended for users who have a more in depth background to R programming. Attendance to the Programming in R course should be adequate background.}
+
+\cc{caret} is a very useful package, neatly boxing up model fitting and prediction, including finding tuning parameters based on resampling estimates of model statistics. In practical $3$ we saw that we could specify our own statistics by which to choose models. Here we will extend that example adding a new model method that can be used with train.
+
+The practical $3$ advanced section motivates choice of model based on a custom metric, the distance from perfect classification model. Each classification in a two class model has so far been made when the probability of an event is greater than 50\%. If we had a scenario where a false positive is more expensive than a false negative we might consider changing the classification threshold. We will consider this by creating a custom model fit based on a LDA.
+
+To start we need an idea of how the model methods are looked at from the \cc{caret train} function. When a method is called \cc{caret} calls the \cc{getModelInfo()} function.
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{modInfo} \hlkwb{=} \hlkwd{getModelInfo}\hlstd{(}\hlkwc{model} \hlstd{=} \hlstr{"lda"}\hlstd{,} \hlkwc{regex} \hlstd{=} \hlnum{FALSE}\hlstd{)[[}\hlnum{1}\hlstd{]]}
+\hlkwd{names}\hlstd{(modInfo)}
+\end{alltt}
+\begin{verbatim}
+##  [1] "label"      "library"    "loop"       "type"      
+##  [5] "parameters" "grid"       "fit"        "predict"   
+##  [9] "prob"       "predictors" "tags"       "levels"    
+## [13] "sort"
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+\noindent We can use \cc{str} to get an idea of the structure, essentially we just want to modify bits of this list in order to specify out custom model. We will create a list to match each necessary component and where no change is necessary we will just assign the components from modInfo.
+
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{customModel} \hlkwb{=} \hlkwd{list}\hlstd{(}\hlkwc{label} \hlstd{=} \hlstr{"custom"}\hlstd{,}
+    \hlkwc{library} \hlstd{= modInfo}\hlopt{$}\hlstd{library,}
+    \hlkwc{type} \hlstd{= modInfo}\hlopt{$}\hlstd{type,}
+    \hlkwc{parameters}  \hlstd{=} \hlkwd{data.frame}\hlstd{(}
+      \hlkwc{parameter} \hlstd{=} \hlkwd{c}\hlstd{(}\hlstr{"threshold"}\hlstd{),}
+      \hlkwc{class} \hlstd{=} \hlkwd{c}\hlstd{(}\hlstr{"numeric"}\hlstd{),}
+      \hlkwc{label} \hlstd{=} \hlkwd{c}\hlstd{(}\hlstr{"Probability Cutoff"}\hlstd{)),}
+    \hlkwc{grid} \hlstd{=} \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{,} \hlkwc{y}\hlstd{,} \hlkwc{len} \hlstd{=} \hlkwa{NULL}\hlstd{) \{}
+      \hlkwd{data.frame}\hlstd{(}\hlkwc{threshold} \hlstd{=} \hlkwd{seq}\hlstd{(}\hlnum{.01}\hlstd{,} \hlnum{.99}\hlstd{,} \hlkwc{length} \hlstd{= len))}
+    \hlstd{\},}
+    \hlkwc{loop} \hlstd{= modInfo}\hlopt{$}\hlstd{loop,}
+    \hlkwc{fit} \hlstd{=} \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{,} \hlkwc{y}\hlstd{,} \hlkwc{wts}\hlstd{,} \hlkwc{param}\hlstd{,} \hlkwc{lev}\hlstd{,} \hlkwc{last}\hlstd{,} \hlkwc{classProbs}\hlstd{,} \hlkwc{...}\hlstd{) \{}
+      \hlkwa{if}\hlstd{(}\hlkwd{length}\hlstd{(}\hlkwd{levels}\hlstd{(y))} \hlopt{!=} \hlnum{2}\hlstd{)} \hlcom{# we have only added the warning here}
+        \hlkwd{stop}\hlstd{(}\hlstr{"This works only for 2-class problems"}\hlstd{)}
+      \hlkwd{lda}\hlstd{(x, y, ...)}
+    \hlstd{\},}
+    \hlkwc{predict} \hlstd{=} \hlkwa{function}\hlstd{(}\hlkwc{modelFit}\hlstd{,} \hlkwc{newdata}\hlstd{,} \hlkwc{submodels} \hlstd{=} \hlkwa{NULL}\hlstd{) \{}
+      \hlstd{class1p} \hlkwb{=} \hlkwd{predict}\hlstd{(modelFit,newdata)}\hlopt{$}\hlstd{posterior[,}\hlnum{1}\hlstd{]}
+      \hlcom{## Raise the threshold for class #1 and a higher level of}
+      \hlcom{## evidence is needed to call it class 1 so it should }
+      \hlcom{## decrease sensitivity and increase specificity}
+      \hlstd{out} \hlkwb{=} \hlkwd{ifelse}\hlstd{(class1p} \hlopt{>=} \hlstd{modelFit}\hlopt{$}\hlstd{tuneValue}\hlopt{$}\hlstd{threshold,}
+                    \hlstd{modelFit}\hlopt{$}\hlstd{obsLevels[}\hlnum{1}\hlstd{],}
+                    \hlstd{modelFit}\hlopt{$}\hlstd{obsLevels[}\hlnum{2}\hlstd{])}
+      \hlstd{out}
+    \hlstd{\},}
+    \hlkwc{prob} \hlstd{= modInfo}\hlopt{$}\hlstd{prob,}
+    \hlkwc{predictors} \hlstd{= modInfo}\hlopt{$}\hlstd{predictors,}
+    \hlkwc{tags} \hlstd{= modInfo}\hlopt{$}\hlstd{tags,}
+    \hlkwc{levels} \hlstd{= modInfo}\hlopt{$}\hlstd{levels,}
+    \hlkwc{sort} \hlstd{= modInfo}\hlopt{$}\hlstd{sort)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+\noindent This seems like quite a lot of code but we have really only changed
+\begin{itemize}
+  \item parameters -- add the threshold parameter to tune over;
+  \item grid -- a mechanism to set up the set of tuning values to try;
+  \item fit -- we added a warning as it makes no sense for problems with more than $2$ classes;
+  \item predict -- add the mechanism by which to make prediction based on threshold rather than the default
+\end{itemize}
+
+\noindent If define the fourStats function from practical 3 we can then fit the custom model
+
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{fourStats} \hlkwb{=} \hlkwa{function} \hlstd{(}\hlkwc{data}\hlstd{,} \hlkwc{lev} \hlstd{=} \hlkwa{NULL}\hlstd{,} \hlkwc{model} \hlstd{=} \hlkwa{NULL}\hlstd{) \{}
+  \hlstd{out} \hlkwb{=} \hlkwd{twoClassSummary}\hlstd{(data,} \hlkwc{lev} \hlstd{=} \hlkwd{levels}\hlstd{(data}\hlopt{$}\hlstd{obs),}
+                        \hlkwc{model} \hlstd{=} \hlkwa{NULL}\hlstd{)}
+  \hlstd{coords} \hlkwb{=} \hlkwd{matrix}\hlstd{(}\hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,} \hlnum{1}\hlstd{, out[}\hlstr{"Spec"}\hlstd{], out[}\hlstr{"Sens"}\hlstd{]),}
+                   \hlkwc{ncol} \hlstd{=} \hlnum{2}\hlstd{,} \hlkwc{byrow} \hlstd{=} \hlnum{TRUE}\hlstd{)}
+  \hlkwd{c}\hlstd{(}\hlkwc{Dist} \hlstd{=} \hlkwd{dist}\hlstd{(coords)[}\hlnum{1}\hlstd{], out)}
+\hlstd{\}}
+\hlkwd{set.seed}\hlstd{(}\hlnum{9}\hlstd{)}
+\hlkwd{data}\hlstd{(Sonar,} \hlkwc{package} \hlstd{=} \hlstr{"mlbench"}\hlstd{)}
+\hlstd{mod} \hlkwb{=} \hlkwd{train}\hlstd{(Class} \hlopt{~} \hlstd{.,} \hlkwc{data} \hlstd{= Sonar,}
+  \hlkwc{method} \hlstd{= customModel,} \hlkwc{metric} \hlstd{=} \hlstr{"Dist"}\hlstd{,}
+  \hlkwc{maximize} \hlstd{=} \hlnum{FALSE}\hlstd{,}\hlkwc{tuneLength} \hlstd{=} \hlnum{20}\hlstd{,}
+  \hlkwc{trControl} \hlstd{=} \hlkwd{trainControl}\hlstd{(}\hlkwc{method} \hlstd{=} \hlstr{"cv"}\hlstd{,}
+    \hlkwc{classProbs} \hlstd{=} \hlnum{TRUE}\hlstd{,} \hlkwc{summaryFunction} \hlstd{= fourStats))}
+\end{alltt}
+
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in models\$grid(x = x, y = y, len = tuneLength, search = trControl\$search): unused argument (search = trControl\$search)}}\end{kframe}
+\end{knitrout}
+
+\noindent If we examine the model output we can see that the best model has a prediction threshold of less than 0.5. The area under ROC is constant, but the specificity and sensitivity change. With following the structure of the caret models all of the other things still work like the plots in figure~\ref{fig:custom}.
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{plot}\hlstd{(mod)}
+\hlkwd{plot}\hlstd{(varImp)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in plot(mod): object 'mod' not found}}\end{kframe}
+\end{knitrout}
+
+\begin{marginfigure}
+  \includegraphics[width = \textwidth]{graphics/p4-custommodel-crop}
+  \caption{Using the standard \cc{caret} plot functions with our custom model.}
+  \label{fig:custom}
+\end{marginfigure}
+
+\noindent We can still use the model for predictions too, give it a try.
+\end{document}

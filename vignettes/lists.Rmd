@@ -1,0 +1,55 @@
+---
+title: "An Introduction to Lists"
+author: "Colin Gillespie"
+date: "`r Sys.Date()`"
+vignette: >
+   %\VignetteEngine{knitr::rmarkdown}
+   %\VignetteIndexEntry{2. An Introduction to Lists}
+output: knitr:::html_vignette
+---
+
+An R list is an object consisting of an ordered collection of (possibly
+different) objects known as its components. For example, a list could consist of
+a numeric vector and a data frame. To create a list, we use the `list` function
+
+```{r}
+lst = list(name="Fred", wife="Mary", children=3, 
+  child.ages=c(4,7,9))
+``` 
+
+Components are always numbered. In the `lst` object above, we can access
+individual components using the double bracket notation. For example to select
+the fourth element from the list, we have
+
+```{r}
+lst[[4]]
+``` 
+
+So to access the first element of the fourth component we
+do
+
+```{r}
+lst[[4]][1]
+``` 
+
+The `length` function gives the number of top level components:
+
+```{r}
+length(lst)
+``` 
+
+Components of lists may also be named. If this is the case, then we
+can also access the element using its name:
+
+```{r}
+lst[["wife"]]
+lst$name
+``` 
+
+A useful function for interrogating an object is
+`str`. Using the `lst` object
+as an example, we have
+
+```{r}
+str(lst)
+``` 

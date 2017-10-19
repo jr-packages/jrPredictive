@@ -1,0 +1,146 @@
+---
+title: "The caret package"
+author: "Colin Gillespie"
+date: "`r Sys.Date()`"
+vignette: >
+   %\VignetteEngine{knitr::rmarkdown}
+   %\VignetteIndexEntry{1. The caret package}
+output: knitr:::html_vignette
+---
+
+# The caret package
+
+The caret package~\cite{caret} is a great little package that creates an interface to a myriad of model building tools included in various packages in the R universe. It is particularly nice as it provides a single set of functions that can be used for fitting, prediction and assessment of models, removing the need to remember any syntactic differences over the other packages. It is essentially a fancy wrapper for all of the modelling tools that we might want to use. To install this package:
+
+```{r eval = FALSE}
+install.packages("caret")
+```
+
+The vignette for this package gives a little introduction which can be viewed using
+
+```{r eval = FALSE}
+vignette("caret", package = "caret")
+```
+
+There is also a website with lots of information about this [package](http://topepo.github.io/caret/). There are many models that can be fitted using this package, a list of
+which can be found [here](http://topepo.github.io/caret/modelList.html) and is a useful reference.We use this package throughout today as the mechanism for training and
+predicting from models is consistent.
+
+The function `train` I can use to fit my model given a set of training data,
+and `predict()` provides an interface for prediction given new values of the
+predictors. As with lots of R functions there are a number of arguments to each
+of these functions and we will use a number of these throughout the course.
+
+## Advanced caret use
+
+There are lots of nice features included with the `caret` package some of
+which I will mention here.
+
+## Parallel computation
+
+`caret` has built into it's train function the ability to use parallel
+computation for model fitting. The parallel computation typically applies to the
+resampling methods that are used to asses model performance with models being
+fit and tested using a data partition on each thread. 
+
+Using this functionality is trivial on a linux machine, in fact by default the
+train method will use parallel computing if available, so all we need to do is
+set up an environment and make R aware of it.
+
+```{r eval = FALSE}
+library("doMC")
+registerDoMC(cores = 8)
+```
+
+This unfortunately doesn't work on Windows, however we can use the
+`doParallel` package to acheive the same thing:
+
+```{r eval = FALSE}
+library("doParallel")
+cl = makeCluster(8)
+registerDoParallel(cl)
+```
+
+And that's it. If there is a registered parallel back end the train function
+will use it.
+
+## Using the help functionality
+
+Using help pages from `caret` is a little more difficult to follow than with
+standard functions like plot, particularly when it comes to model types. The
+standard notation for help pages can be used
+
+```{r eval = FALSE}
+?train
+?varImp
+```
+
+but for information about models and their parameters we need to look in the packages that the models come from. The website above gives information about where model functions come from. To look at a particular function in a particular package we can use
+
+```{r eval = FALSE}
+?ipred::treebag
+```
+which looks for the help function for the `treebag` method that is in the `ipred` package that we used earlier for bagged trees.
+
+## Plot functions
+
+There are lots of plot functions associated with different caret objects. They
+often work by just using the plot command with a different plot from each
+object. To see a plot methods
+help file you can use `?plot.<<object type>>` notation:
+
+```{r eval = FALSE}
+?plot.train
+?plot.varImp.train
+```
+
+Try the following example
+```{r fig.keep="none", message = FALSE}
+library("caret")
+data(diamonds, package = "ggplot2")
+i = sample(nrow(diamonds), 1000) # some subset to help plotting
+diamonds = diamonds[i,]
+m = train(price~., method = "pls", data = diamonds, 
+    tuneLength = 10)
+# a plot of model object gives us the resampling 
+# information across tuning parameters
+plot(m)
+## using the varImp function with plot we get
+## variable importance scores
+plot(varImp(m))
+# a plot of the final model shows predicted against
+# observed values
+plot(m$finalModel)
+## a plot of residuals against fitted values
+plot(fitted.values(m),resid(m))
+```
+
+There are lots of objects that are part of a train object which can be explored easily since each one is just a list
+```{r}
+names(m)
+```
+in addition 
+```{r eval = FALSE}
+str(m)
+```
+gives lots of information about the structure of the object, the output of which has been omitted here.
+
+## Specifying training criteria
+
+The `trainControl` function takes a number of arguments for helping to choose
+which model to keep. For full details see the help page but here are a few
+useful ones:
+
+  * `method` -- the method used for estimation of statistics, options include
+  `boot`, `cv` and `LOOCV`
+  * `index` -- for specifying a particular training set via indicies, by default the rest will be used for validation
+
+Some useful arguments for the `train` function:
+
+  * method -- character -- model type to use, refer to website for choices
+  * tuneLength -- numeric -- the number of unique tuning parameters to try
+  * tuneGrid -- data frame -- a specific grid of tuning parameters for the model
+  * metric -- character -- the meaesure by which to choose the best model, possible values might be `RMSE`, `Accuraccy` where appropriate
+  * trControl -- trainControl object -- to pass information from train control
+  * preProcess -- character -- pass arguments for any data pre--processing such as `center` and `scale`
+  * Can also pass in model arguments that get passed to the underlying model function, such as `nbagg` for the treebag method

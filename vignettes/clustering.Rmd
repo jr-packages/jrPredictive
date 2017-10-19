@@ -1,0 +1,154 @@
+---
+title: "Clustering"
+author: "Colin Gillespie"
+date: "`r Sys.Date()`"
+vignette: >
+   %\VignetteEngine{knitr::rmarkdown}
+   %\VignetteIndexEntry{4. Clustering}
+output: knitr:::html_vignette
+---
+
+## Clustering
+
+Clustering analysis covers a wide range of numerical techniques. It is
+slightly different to the other methods in this chapter in that we are
+trying to uncover groups of observations in a data set. It is a form
+of what is known as unsupervised learning.
+
+When we cluster the observations we ai to partition the data into
+groups that are similar to each other. Definition of what observations
+are close or dissimilar is often domain specific an drequires
+knowledge of the data being studied.
+
+There are a large number of clustering techniques available: see the
+CRAN cluster [task view](http://cran.r-project.org/web/views/Cluster.html).
+
+
+## Example: USA arrests
+
+This data set contains statistics, in arrests per 100,000 residents
+for assault, murder, and rape in each of the 50 US states in
+1973. Also given is the percent of the population living in urban
+areas. The data comes with the base version of R. In total there are
+four variables:
+
+  * `Murder`: Murder arrests (per 100,000).
+  * `Assault`: Assault arrests (per 100,000).
+  * `UrbanPop`: Percent urban population.
+  * `Rape`: Rape arrests (per 100,000).
+
+The row name of the data frame gives you the state. The data set comes
+with R, so you can access the data set using:
+  
+```{r}
+head(USArrests, 3) 
+```  
+  
+## Hierarchical clustering
+
+There are a wide range of hierarchical clustering approaches. To use
+hierarchical clustering, we first have to calculate the distance
+matrix between the different data points using the `dist` function
+
+```{r}
+d = dist(USArrests, method = "euclidean") 
+```  
+
+The default distance measure is *euclidean*. This is
+the squared distance between two points. There are
+a number of other distance measures available -- see the associated
+help file for more details.
+
+Next we cluster the distance matrix, using the `hclust`
+function
+
+```{r}
+fit = hclust(d, method="ward.D2") 
+```  
+
+The `ward.D2` method of clustering tends to find smaller,
+more compact clusters. Again there are a variety of other clustering
+methods available. We can now plot the dendogram
+
+```{r cluster_fig,fig.width=5, fig.height=5, echo=1}
+plot(fit, labels=rownames(d)) 
+groups = cutree(fit, k=3) 
+rect.hclust(fit, k=3, border="rosybrown") 
+```  
+
+To highlight particular clusters, we use `cutree` and
+`rect.hclust`
+
+```{r cluster_fig, eval=FALSE, echo=2:3} 
+```  
+  
+
+## $k$-means clustering
+
+When you carry out hierarchical clustering, you have to calculate a
+distance or similarity matrix between all pairs of cases. This can be
+prohibitive in terms of memory and CPU time.
+
+A clustering technique that doesn't require this matrix is $k$-means
+clustering. It differs from hierarchical
+clustering in a few ways. First, you state the number of clusters your
+want; although you can ``scan'' different clusters. Second when
+running the algorithm, points can be reassigned to different
+clusters. However, with hierarchical clustering once a point has been
+assigned, it is fixed.
+
+The algorithm partitions the data into $k$ groups that minimises the
+within-group sum of squares. If we only have a few data points, then we
+could compute all possible partitions. However, the number of possible
+combinations increase rapidly. For example, when $n=100$ and $k=5$,
+there are around $10^{68}$ possible partitions.
+
+The algorithm works as follows:
+
+  1. Initialise the system where individuals are assigned to groups.
+  2. Propose moves of individuals from one cluster to another. If
+this leads to an improvement in the clustering criterion, accept the
+move.
+  3. Repeat step 2, until there is no improvement.
+
+Since the search area is very large, we rarely explore the entire
+space. To run the k-mean algorithm on the USA arrest data, we use the
+`kmeans` function:
+
+```{r eval=FALSE}
+kmeans(USArrests, centers=3) 
+```
+
+Notice that we must specify the number of clusters. When the variables are measured on different scales, it is advisable
+to standardise the variables. In the USA data, the scales between the
+variables are quite different:
+
+```{r}
+apply(USArrests,2,mean) 
+```
+
+This means that when we run the the clustering algorithm,
+the `Assault` variable will have more weight in the error function
+than the other variables. To get around this problem, we standardise
+the matrix so that each variable has a mean of zero and standard
+deviation of one. This is straightforward is we use the `scale`
+function
+
+```{r}
+std_usa = scale(USArrests) 
+```
+
+Each variable now has mean zero and standard deviation
+one. We can rerun
+
+```{r eval=FALSE}
+kmeans(std_usa, centers=3) 
+```
+
+We should also redo the hierarchical clustering using the
+scaled data, i.e.
+
+```{r eval = FALSE}
+plot(hclust(dist(std_usa))) 
+```
+

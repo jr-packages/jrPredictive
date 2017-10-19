@@ -1,0 +1,11 @@
+.build.timestamp
+*-concordance.tex
+*.log
+*syn*.gz
+*.tex
+*.aux
+*.out
+caret.R
+clustering.R
+lists.R
+stepwise.R

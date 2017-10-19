@@ -1,0 +1,886 @@
+%\VignetteIndexEntry{solutions3}
+%\VignetteEngine{Sweave}
+
+
+\documentclass[a4paper,justified,openany]{tufte-handout}\usepackage[]{graphicx}\usepackage[]{color}
+%% maxwidth is the original width if it is less than linewidth
+%% otherwise use linewidth (to make sure the graphics do not exceed the margin)
+\makeatletter
+\def\maxwidth{ %
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+\makeatother
+
+\definecolor{fgcolor}{rgb}{0.345, 0.345, 0.345}
+\newcommand{\hlnum}[1]{\textcolor[rgb]{0.686,0.059,0.569}{#1}}%
+\newcommand{\hlstr}[1]{\textcolor[rgb]{0.192,0.494,0.8}{#1}}%
+\newcommand{\hlcom}[1]{\textcolor[rgb]{0.678,0.584,0.686}{\textit{#1}}}%
+\newcommand{\hlopt}[1]{\textcolor[rgb]{0,0,0}{#1}}%
+\newcommand{\hlstd}[1]{\textcolor[rgb]{0.345,0.345,0.345}{#1}}%
+\newcommand{\hlkwa}[1]{\textcolor[rgb]{0.161,0.373,0.58}{\textbf{#1}}}%
+\newcommand{\hlkwb}[1]{\textcolor[rgb]{0.69,0.353,0.396}{#1}}%
+\newcommand{\hlkwc}[1]{\textcolor[rgb]{0.333,0.667,0.333}{#1}}%
+\newcommand{\hlkwd}[1]{\textcolor[rgb]{0.737,0.353,0.396}{\textbf{#1}}}%
+\let\hlipl\hlkwb
+
+\usepackage{framed}
+\makeatletter
+\newenvironment{kframe}{%
+ \def\at@end@of@kframe{}%
+ \ifinner\ifhmode%
+  \def\at@end@of@kframe{\end{minipage}}%
+  \begin{minipage}{\columnwidth}%
+ \fi\fi%
+ \def\FrameCommand##1{\hskip\@totalleftmargin \hskip-\fboxsep
+ \colorbox{shadecolor}{##1}\hskip-\fboxsep
+     % There is no \\@totalrightmargin, so:
+     \hskip-\linewidth \hskip-\@totalleftmargin \hskip\columnwidth}%
+ \MakeFramed {\advance\hsize-\width
+   \@totalleftmargin\z@ \linewidth\hsize
+   \@setminipage}}%
+ {\par\unskip\endMakeFramed%
+ \at@end@of@kframe}
+\makeatother
+
+\definecolor{shadecolor}{rgb}{.97, .97, .97}
+\definecolor{messagecolor}{rgb}{0, 0, 0}
+\definecolor{warningcolor}{rgb}{1, 0, 1}
+\definecolor{errorcolor}{rgb}{1, 0, 0}
+\newenvironment{knitrout}{}{} % an empty environment to be redefined in TeX
+
+\usepackage{alltt}
+
+\usepackage{amsmath}
+\usepackage{graphicx}
+\setkeys{Gin}{width=\linewidth,totalheight=\textheight,keepaspectratio}
+\graphicspath{{graphics/}}
+\title{Predictive Analytics: practical 3 solutions}
+\date{} % if the \date{} command is left out, the current date will be used
+
+\usepackage{booktabs}
+\usepackage{units}
+\usepackage{fancyvrb}
+\fvset{fontsize=\normalsize}
+\newcommand{\cc}{\texttt}
+\graphicspath{{../graphics/}}
+\setcounter{secnumdepth}{2}
+\usepackage{microtype}
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\begin{document}
+\maketitle% this prints the handout title, author, and date
+
+\section*{The \cc{OJ} data set}
+
+The \cc{OJ} data set from the \cc{ISLR} package contains information on which of two brands of orange juice customers purchased\sidenote{The response variable is \cc{Purchase}.} and can be loaded using
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{data}\hlstd{(OJ,} \hlkwc{package} \hlstd{=} \hlstr{"ISLR"}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+\noindent After loading the \cc{caret} and \cc{jrPredictive} package
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{library}\hlstd{(}\hlstr{"caret"}\hlstd{)}
+\hlkwd{library}\hlstd{(}\hlstr{"jrPredictive"}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+\noindent make an initial examination of the relationships between each of the predictors and the response\sidenote{Use the \cc{plot} function with a model formula or the \cc{pairs} function.}
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{par}\hlstd{(}\hlkwc{mfrow} \hlstd{=} \hlkwd{c}\hlstd{(}\hlnum{4}\hlstd{,} \hlnum{5}\hlstd{),} \hlkwc{mar}\hlstd{=} \hlkwd{c}\hlstd{(}\hlnum{4}\hlstd{,} \hlnum{.5}\hlstd{,} \hlnum{.5}\hlstd{,} \hlnum{.5}\hlstd{))}
+\hlkwd{plot}\hlstd{(Purchase} \hlopt{~} \hlstd{.,} \hlkwc{data} \hlstd{= OJ)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+\section*{Initial model building}
+
+\begin{itemize}
+\item To begin, create a logistic regression model that takes into consideration the prices of the two brands of orange juice, \cc{PriceCH} and \cc{PriceMM}.\sidenote{Hint: Use the \cc{train} function, with \cc{method = 'glm'}.  Look at the help page for the data set to understand what these
+variables represent.}
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{m1} \hlkwb{=} \hlkwd{train}\hlstd{(Purchase} \hlopt{~} \hlstd{PriceCH} \hlopt{+} \hlstd{PriceMM,}
+    \hlkwc{data} \hlstd{= OJ,} \hlkwc{method} \hlstd{=} \hlstr{"glm"}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+  \item What proportion of purchases does this model get right?
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{mean}\hlstd{(}\hlkwd{predict}\hlstd{(m1)} \hlopt{!=} \hlstd{OJ}\hlopt{$}\hlstd{Purchase)}
+\end{alltt}
+\begin{verbatim}
+## [1] 0.3776
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+  \item How does this compare to if we used no model?
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{# with no model we essentially predict according to}
+\hlcom{# proportion of observations in data}
+\hlstd{probs} \hlkwb{=} \hlkwd{table}\hlstd{(OJ}\hlopt{$}\hlstd{Purchase)}\hlopt{/}\hlkwd{nrow}\hlstd{(OJ)}
+\hlstd{preds} \hlkwb{=} \hlkwd{sample}\hlstd{(}\hlkwd{levels}\hlstd{(OJ}\hlopt{$}\hlstd{Purchase),} \hlkwc{prob} \hlstd{= probs)}
+\hlkwd{mean}\hlstd{(preds} \hlopt{!=} \hlstd{OJ}\hlopt{$}\hlstd{Purchase)}
+\end{alltt}
+\begin{verbatim}
+## [1] 0.4991
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+\end{itemize}
+
+\section*{Visualising the boundary}
+
+The \cc{jrPredictive} package contains following code produces a plot of the decision boundary as seen in figure~\ref{fig:purchaseboundary}.
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{boundary_plot}\hlstd{(m1,OJ}\hlopt{$}\hlstd{PriceCH, OJ}\hlopt{$}\hlstd{PriceMM, OJ}\hlopt{$}\hlstd{Purchase,}
+              \hlkwc{xlab}\hlstd{=}\hlstr{"Price CH"}\hlstd{,} \hlkwc{ylab}\hlstd{=}\hlstr{"Price MM"}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+\noindent Run the boundary code above, and make sure you get a similar plot.
+
+\begin{marginfigure}
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=\maxwidth]{knitr_figure/solutions2-figure1-1} 
+
+}
+
+
+
+\end{knitrout}
+  \caption{Examining the decision boundary for orange juice brand purchases by price.}
+  \label{fig:purchaseboundary}
+\end{marginfigure}
+
+\begin{itemize}
+  \item What happens if we add an interaction term? How does the boundary change?
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{# We now have a curved decision boundary.}
+\hlcom{# There are two regions of where we would predict MM, bottom left, and a tiny one up in the top right.}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+\item Try adding polynomial terms.
+\end{itemize}
+
+\section*{Using all of the predictors}
+
+\begin{itemize}
+  \item Fit a logistic regression model using all of the predictors.
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{mLM} \hlkwb{=} \hlkwd{train}\hlstd{(Purchase} \hlopt{~} \hlstd{.,} \hlkwc{data} \hlstd{= OJ,} \hlkwc{method} \hlstd{=} \hlstr{"glm"}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+  \item Is there a problem?
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{## YES!}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+\noindent We can view the most recent warning messages by using the \cc{warnings} function
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{warnings}\hlstd{()}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+
+
+\noindent This suggests some rank--deficient fit problems,
+
+\item Look at the final model, you should notice that a number of parameters have not been estimated
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{m_log}\hlopt{$}\hlstd{finalModel}
+\end{alltt}
+\begin{verbatim}
+## 
+## Call:  NULL
+## 
+## Coefficients:
+##    (Intercept)  WeekofPurchase         StoreID  
+##         5.1581         -0.0118         -0.1709  
+##        PriceCH         PriceMM          DiscCH  
+##         4.5865         -3.6249         10.7967  
+##         DiscMM       SpecialCH       SpecialMM  
+##        26.4615          0.2672          0.3169  
+##        LoyalCH     SalePriceMM     SalePriceCH  
+##        -6.3023              NA              NA  
+##      PriceDiff       Store7Yes       PctDiscMM  
+##             NA          0.3113        -50.6976  
+##      PctDiscCH   ListPriceDiff           STORE  
+##       -27.3399              NA              NA  
+## 
+## Degrees of Freedom: 1069 Total (i.e. Null);  1057 Residual
+## Null Deviance:	    1430 
+## Residual Deviance: 817 	AIC: 843
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\noindent The help page
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlopt{?}\hlstd{ISLR}\hlopt{::}\hlstd{OJ}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+\noindent gives further insight: the \cc{PriceDiff} variable is a linear combination of \cc{SalePriceMM} and \cc{SalePriceCH} so we should remove this. In addition the \cc{StoreID} and \cc{STORE} variable are different encodings of the same information so we should remove one of these too. We also have \cc{DiscCH} and \cc{DiscMM} which are the differences between \cc{PriceCH} and \cc{SalePriceCH} and \cc{PriceMM} and \cc{SalePriceMM} respectively and \cc{ListPriceDiff} is a linear combination of these prices. Removing all of these variables allows the model to be fit and all parameters to be estimated.\sidenote{This is to highlight that we need to understand what we have in our data.}
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{OJsub} \hlkwb{=} \hlstd{OJ[,}\hlopt{!}\hlstd{(}\hlkwd{colnames}\hlstd{(OJ)} \hlopt{%in%} \hlkwd{c}\hlstd{(}\hlstr{"STORE"}\hlstd{,} \hlstr{"SalePriceCH"}\hlstd{,}
+           \hlstr{"SalePriceMM"}\hlstd{,}\hlstr{"PriceDiff"}\hlstd{,} \hlstr{"ListPriceDiff"}\hlstd{))]}
+\hlstd{OJsub}\hlopt{$}\hlstd{Store7} \hlkwb{=} \hlkwd{as.numeric}\hlstd{(OJsub}\hlopt{$}\hlstd{Store7)} \hlopt{-} \hlnum{1}
+\hlstd{m_log} \hlkwb{=} \hlkwd{train}\hlstd{(Purchase} \hlopt{~} \hlstd{.,} \hlkwc{data} \hlstd{= OJsub,} \hlkwc{method} \hlstd{=} \hlstr{"glm"}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+\noindent The problem of linear combinations of predictors can be shown with this simple theoretical example. Suppose we have a response $y$ and three predictors $x_1$, $x_2$ and the linear combination $x_3 = (x_1 + x_2)$. On fitting a linear model we try to find estimates of the parameters in the equation
+\[
+y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \beta_3 (x_1 + x_2).
+\]
+\noindent However we could just as easily rewrite this as
+\begin{align*}
+y &= \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \beta_3 (x_1 + x_2) \\
+&= \beta_0 + (\beta_1 + \beta_3) x_1 + (\beta_2 + \beta_3) x_2 \\
+&= \beta_0 + \beta_1^{\ast} x_1 + \beta_2^{\ast} x_2.
+\end{align*}
+This leads to a rank--deficient model matrix, essentially we can never find the value of the $\beta_3$ due to the fact we have the linear combination of predictors.
+
+We could achieve the same using the \cc{caret} package function \cc{findLinearCombos}. The function takes a model matrix as an argument. We can create such a matrix using the
+\cc{model.matrix} function with our formula object
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{remove} \hlkwb{=} \hlkwd{findLinearCombos}\hlstd{(}
+               \hlkwd{model.matrix}\hlstd{(Purchase} \hlopt{~} \hlstd{.,} \hlkwc{data} \hlstd{= OJ))}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+\noindent The output list has a component called \cc{remove} suggesting which variables should be removed to get rid of linear combinations
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{(badvar} \hlkwb{=} \hlkwd{colnames}\hlstd{(OJ)[remove}\hlopt{$}\hlstd{remove])}
+\end{alltt}
+\begin{verbatim}
+## [1] "SalePriceMM"   "SalePriceCH"   "PriceDiff"    
+## [4] "ListPriceDiff" "STORE"
+\end{verbatim}
+\begin{alltt}
+\hlstd{OJsub} \hlkwb{=} \hlstd{OJ[,} \hlopt{-}\hlstd{remove}\hlopt{$}\hlstd{remove]}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+  \item How accurate is this new model using more predictors?]
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{# the corrected model}
+\hlstd{remove} \hlkwb{=} \hlkwd{findLinearCombos}\hlstd{(}\hlkwd{model.matrix}\hlstd{(Purchase}\hlopt{~}\hlstd{.,} \hlkwc{data} \hlstd{= OJ))}
+\hlstd{(badvar} \hlkwb{=} \hlkwd{colnames}\hlstd{(OJ)[remove}\hlopt{$}\hlstd{remove])}
+\end{alltt}
+\begin{verbatim}
+## [1] "SalePriceMM"   "SalePriceCH"   "PriceDiff"    
+## [4] "ListPriceDiff" "STORE"
+\end{verbatim}
+\begin{alltt}
+\hlstd{OJsub} \hlkwb{=} \hlstd{OJ[,}\hlopt{-}\hlstd{(remove}\hlopt{$}\hlstd{remove)]}
+\hlstd{mLM} \hlkwb{=} \hlkwd{train}\hlstd{(Purchase}\hlopt{~}\hlstd{.,} \hlkwc{data} \hlstd{= OJsub,} \hlkwc{method} \hlstd{=} \hlstr{"glm"}\hlstd{)}
+\hlkwd{mean}\hlstd{(}\hlkwd{predict}\hlstd{(mLM,OJsub)} \hlopt{==} \hlstd{OJsub}\hlopt{$}\hlstd{Purchase)}
+\end{alltt}
+\begin{verbatim}
+## [1] 0.8355
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+  \item What are the values of sensitivity and specificity?
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{## could use confusionMatrix}
+\hlstd{(cmLM} \hlkwb{=} \hlkwd{confusionMatrix}\hlstd{(}\hlkwd{predict}\hlstd{(mLM,OJsub),OJsub}\hlopt{$}\hlstd{Purchase))}
+\end{alltt}
+\begin{verbatim}
+## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction  CH  MM
+##         CH 577 100
+##         MM  76 317
+##                                         
+##                Accuracy : 0.836         
+##                  95% CI : (0.812, 0.857)
+##     No Information Rate : 0.61          
+##     P-Value [Acc > NIR] : <2e-16        
+##                                         
+##                   Kappa : 0.651         
+##  Mcnemar's Test P-Value : 0.083         
+##                                         
+##             Sensitivity : 0.884         
+##             Specificity : 0.760         
+##          Pos Pred Value : 0.852         
+##          Neg Pred Value : 0.807         
+##              Prevalence : 0.610         
+##          Detection Rate : 0.539         
+##    Detection Prevalence : 0.633         
+##       Balanced Accuracy : 0.822         
+##                                         
+##        'Positive' Class : CH            
+## 
+\end{verbatim}
+\begin{alltt}
+\hlcom{# or}
+\hlkwd{sensitivity}\hlstd{(}\hlkwd{predict}\hlstd{(mLM,OJsub),OJsub}\hlopt{$}\hlstd{Purchase)}
+\end{alltt}
+\begin{verbatim}
+## [1] 0.8836
+\end{verbatim}
+\begin{alltt}
+\hlkwd{specificity}\hlstd{(}\hlkwd{predict}\hlstd{(mLM,OJsub),OJsub}\hlopt{$}\hlstd{Purchase)}
+\end{alltt}
+\begin{verbatim}
+## [1] 0.7602
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+  \item What does this mean?
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{#The model is fairly good at picking up both positive events, person buys CH, and negative events, MM.}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+\end{itemize}
+
+\section*{ROC curves}
+
+\begin{marginfigure}
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=\maxwidth]{knitr_figure/solutions2-figure2-1} 
+
+}
+
+
+
+\end{knitrout}
+  \caption{An example of a ROC curve for the logistic regression classifier. We can overlay ROC curves by adding the \cc{add = TRUE} argument.}
+  \label{fig:roc}
+\end{marginfigure}
+
+If we were interested in the area under the ROC curve, we could retrain the model using the \cc{twoClassSummary} function as an argument to a train control object. Alternatively we can
+use the \cc{pROC} package
+
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{library}\hlstd{(}\hlstr{"pROC"}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+\noindent This also allows us to view the ROC curve, via
+
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{curve} \hlkwb{=} \hlkwd{roc}\hlstd{(}\hlkwc{response} \hlstd{= OJsub}\hlopt{$}\hlstd{Purchase,}
+  \hlkwc{predictor} \hlstd{=} \hlkwd{predict}\hlstd{(m_log,} \hlkwc{type} \hlstd{=} \hlstr{"prob"}\hlstd{)[,}\hlstr{"CH"}\hlstd{])}
+\hlcom{## this makes CH the event of interest}
+\hlkwd{plot}\hlstd{(curve,} \hlkwc{legacy.axes} \hlstd{=} \hlnum{TRUE}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+
+\section*{Other classification models}
+
+\begin{itemize}
+  \item Try fitting models using the other classification algorithms we have seen so far. To begin with, just have two covariates and use the \cc{boundary\_plot} function to visualise
+  the results\marginnote{We have seen LDA, QDA, KNN and logistic regression. Tomorrow we will cover
+  support vector machines and neural nets; we can visualise the results in the same way.}
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{mKNN} \hlkwb{=} \hlkwd{train}\hlstd{(Purchase}\hlopt{~}\hlstd{.,} \hlkwc{data} \hlstd{= OJsub,} \hlkwc{method} \hlstd{=} \hlstr{"knn"}\hlstd{)}
+\hlstd{mLDA} \hlkwb{=} \hlkwd{train}\hlstd{(Purchase}\hlopt{~}\hlstd{.,} \hlkwc{data} \hlstd{= OJsub,} \hlkwc{method} \hlstd{=} \hlstr{"lda"}\hlstd{)}
+\hlstd{mQDA} \hlkwb{=} \hlkwd{train}\hlstd{(Purchase}\hlopt{~}\hlstd{.,} \hlkwc{data} \hlstd{= OJsub,} \hlkwc{method} \hlstd{=} \hlstr{"qda"}\hlstd{)}
+\hlstd{cmKNN} \hlkwb{=} \hlkwd{confusionMatrix}\hlstd{(}\hlkwd{predict}\hlstd{(mKNN,OJsub),OJsub}\hlopt{$}\hlstd{Purchase)}
+\hlstd{cmLDA} \hlkwb{=} \hlkwd{confusionMatrix}\hlstd{(}\hlkwd{predict}\hlstd{(mLDA,OJsub),OJsub}\hlopt{$}\hlstd{Purchase)}
+\hlstd{cmQDA} \hlkwb{=} \hlkwd{confusionMatrix}\hlstd{(}\hlkwd{predict}\hlstd{(mQDA,OJsub),OJsub}\hlopt{$}\hlstd{Purchase)}
+\hlstd{(info} \hlkwb{=} \hlkwd{data.frame}\hlstd{(}\hlkwc{Model} \hlstd{=} \hlkwd{c}\hlstd{(}\hlstr{"logistic"}\hlstd{,}\hlstr{"knn"}\hlstd{,}\hlstr{"lda"}\hlstd{,}\hlstr{"qda"}\hlstd{),}
+           \hlkwc{Accuracy} \hlstd{=} \hlkwd{c}\hlstd{(cmLM}\hlopt{$}\hlstd{overall[}\hlstr{"Accuracy"}\hlstd{],}
+               \hlstd{cmKNN}\hlopt{$}\hlstd{overall[}\hlstr{"Accuracy"}\hlstd{],}
+               \hlstd{cmLDA}\hlopt{$}\hlstd{overall[}\hlstr{"Accuracy"}\hlstd{],}
+               \hlstd{cmQDA}\hlopt{$}\hlstd{overall[}\hlstr{"Accuracy"}\hlstd{]),}
+           \hlkwc{Sensitivity} \hlstd{=} \hlkwd{c}\hlstd{(cmLM}\hlopt{$}\hlstd{byClass[}\hlstr{"Sensitivity"}\hlstd{],}
+               \hlstd{cmKNN}\hlopt{$}\hlstd{byClass[}\hlstr{"Sensitivity"}\hlstd{],}
+               \hlstd{cmLDA}\hlopt{$}\hlstd{byClass[}\hlstr{"Sensitivity"}\hlstd{],}
+               \hlstd{cmQDA}\hlopt{$}\hlstd{byClass[}\hlstr{"Sensitivity"}\hlstd{]),}
+           \hlkwc{Specificity} \hlstd{=} \hlkwd{c}\hlstd{(cmLM}\hlopt{$}\hlstd{byClass[}\hlstr{"Specificity"}\hlstd{],}
+               \hlstd{cmKNN}\hlopt{$}\hlstd{byClass[}\hlstr{"Specificity"}\hlstd{],}
+               \hlstd{cmLDA}\hlopt{$}\hlstd{byClass[}\hlstr{"Specificity"}\hlstd{],}
+               \hlstd{cmQDA}\hlopt{$}\hlstd{byClass[}\hlstr{"Specificity"}\hlstd{])))}
+\end{alltt}
+\begin{verbatim}
+##      Model Accuracy Sensitivity Specificity
+## 1 logistic   0.8355      0.8836      0.7602
+## 2      knn   0.8121      0.8775      0.7098
+## 3      lda   0.8374      0.8790      0.7722
+## 4      qda   0.8168      0.8407      0.7794
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+  \item How do they compare?
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{#Logistic regression and LDA have highest accuracy, QDA is poorest at classifying events, KNN gives most false positives}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+  \item How does varying the number of nearest neighbours in a KNN affect the model fit?
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{#Accuracy increases at first with knn before then getting worse after a peak value of 9.}
+\hlstd{(mKNN2} \hlkwb{=} \hlkwd{train}\hlstd{(Purchase}\hlopt{~}\hlstd{.,} \hlkwc{data} \hlstd{= OJsub,} \hlkwc{method} \hlstd{=} \hlstr{"knn"}\hlstd{,}
+    \hlkwc{tuneGrid} \hlstd{=} \hlkwd{data.frame}\hlstd{(}\hlkwc{k} \hlstd{=} \hlnum{1}\hlopt{:}\hlnum{30}\hlstd{)))}
+\end{alltt}
+\begin{verbatim}
+## k-Nearest Neighbors 
+## 
+## 1070 samples
+##   12 predictors
+##    2 classes: 'CH', 'MM' 
+## 
+## No pre-processing
+## Resampling: Bootstrapped (25 reps) 
+## Summary of sample sizes: 1070, 1070, 1070, 1070, 1070, 1070, ... 
+## Resampling results across tuning parameters:
+## 
+##   k   Accuracy  Kappa 
+##    1  0.6984    0.3638
+##    2  0.6902    0.3467
+##    3  0.6967    0.3584
+##    4  0.7020    0.3690
+##    5  0.7112    0.3866
+##    6  0.7087    0.3812
+##    7  0.7029    0.3682
+##    8  0.7053    0.3726
+##    9  0.7084    0.3779
+##   10  0.7085    0.3771
+##   11  0.7049    0.3690
+##   12  0.7030    0.3648
+##   13  0.6991    0.3561
+##   14  0.6980    0.3539
+##   15  0.6946    0.3451
+##   16  0.6853    0.3253
+##   17  0.6869    0.3277
+##   18  0.6823    0.3167
+##   19  0.6780    0.3075
+##   20  0.6740    0.2983
+##   21  0.6720    0.2934
+##   22  0.6702    0.2899
+##   23  0.6685    0.2855
+##   24  0.6711    0.2916
+##   25  0.6699    0.2875
+##   26  0.6704    0.2896
+##   27  0.6703    0.2893
+##   28  0.6644    0.2763
+##   29  0.6651    0.2771
+##   30  0.6638    0.2748
+## 
+## Accuracy was used to select the optimal model using
+##   the largest value.
+## The final value used for the model was k = 5.
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+\end{itemize}
+
+\noindent The KNN algorithm described in the notes can also be used for regression problems. In this case the predicted response is the mean of the $k$ nearest neighbours.
+\begin{itemize}
+  \item Try fitting the KNN model for the regression problem in practical 1.
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{library}\hlstd{(}\hlstr{"jrPredictive"}\hlstd{)}
+\hlkwd{data}\hlstd{(FuelEconomy,} \hlkwc{package} \hlstd{=} \hlstr{"AppliedPredictiveModeling"}\hlstd{)}
+\hlstd{regKNN} \hlkwb{=} \hlkwd{train}\hlstd{(FE}\hlopt{~}\hlstd{.,} \hlkwc{data} \hlstd{= cars2010,} \hlkwc{method} \hlstd{=} \hlstr{"knn"}\hlstd{)}
+\hlstd{regLM} \hlkwb{=} \hlkwd{train}\hlstd{(FE}\hlopt{~}\hlstd{.,} \hlkwc{data} \hlstd{= cars2010,} \hlkwc{method} \hlstd{=} \hlstr{"lm"}\hlstd{)}
+\hlstd{regKNN}\hlkwb{=} \hlkwd{validate}\hlstd{(regKNN)}
+\hlstd{regLM} \hlkwb{=} \hlkwd{validate}\hlstd{(regLM)}
+\hlkwd{mark}\hlstd{(regKNN)}
+\hlkwd{mark}\hlstd{(regLM)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+  \item How does this compare to the linear regression models?
+
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{#The KNN regression model is not as good as the linear model at predicting the test set. It overestimates more at the lower end.}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+\end{itemize}
+
+
+\section*{Resampling methods}
+
+\begin{itemize}
+  \item Fit a KNN regression model to the \cc{cars2010} data set with \cc{FE} as the response.\marginnote{The data set can be loaded \cc{data("FuelEconomy", package = "AppliedPredictiveModeling")}.}
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{mKNN} \hlkwb{=} \hlkwd{train}\hlstd{(FE} \hlopt{~} \hlstd{.,} \hlkwc{method} \hlstd{=} \hlstr{"knn"}\hlstd{,} \hlkwc{data} \hlstd{= cars2010)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+  \item Estimate test error using the validation set approach explored at the beginning of the chapter
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{# create a random sample to hold out}
+\hlstd{i} \hlkwb{=} \hlkwd{sample}\hlstd{(}\hlkwd{nrow}\hlstd{(cars2010),} \hlnum{100}\hlstd{)}
+\hlcom{# set the train control object}
+\hlstd{tc} \hlkwb{=} \hlkwd{trainControl}\hlstd{(}\hlkwc{method} \hlstd{=} \hlstr{"cv"}\hlstd{,} \hlkwc{number} \hlstd{=} \hlnum{1}\hlstd{,}
+    \hlkwc{index} \hlstd{=} \hlkwd{list}\hlstd{(}\hlkwc{Fold1} \hlstd{= (}\hlnum{1}\hlopt{:}\hlkwd{nrow}\hlstd{(cars2010))[}\hlopt{-}\hlstd{i]))}
+\hlcom{# fit the model using this train control object}
+\hlstd{mKNNvs} \hlkwb{=} \hlkwd{train}\hlstd{(FE}\hlopt{~}\hlstd{.,} \hlkwc{method} \hlstd{=} \hlstr{"knn"}\hlstd{,} \hlkwc{data} \hlstd{= cars2010,}
+    \hlkwc{trControl} \hlstd{= tc)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+  \item Using the same validation set, estimate the performance of the k nearest neighbours algorithm for different values of $k$.
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{mKNNvs2} \hlkwb{=} \hlkwd{train}\hlstd{(FE}\hlopt{~}\hlstd{.,} \hlkwc{method} \hlstd{=} \hlstr{"knn"}\hlstd{,} \hlkwc{data} \hlstd{= cars2010,}
+     \hlkwc{trControl} \hlstd{= tc,} \hlkwc{tuneGrid} \hlstd{=} \hlkwd{data.frame}\hlstd{(}\hlkwc{k}\hlstd{=} \hlnum{2}\hlopt{:}\hlnum{20}\hlstd{))}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+  \item Which model is chosen as the best when using the validation set approach?
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{## With set.seed(1)}
+\hlstd{mKNNvs2}\hlopt{$}\hlstd{bestTune}
+\end{alltt}
+\begin{verbatim}
+##   k
+## 1 2
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\item Create new \cc{trainControl} objects to specify the use of 5 fold and 10 fold cross validation as well as bootstrapping to estimate test MSE.
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{tc5fold} \hlkwb{=} \hlkwd{trainControl}\hlstd{(}\hlkwc{method} \hlstd{=} \hlstr{"cv"}\hlstd{,} \hlkwc{number} \hlstd{=} \hlnum{5}\hlstd{)}
+\hlstd{tc10fold} \hlkwb{=} \hlkwd{trainControl}\hlstd{(}\hlkwc{method} \hlstd{=} \hlstr{"cv"}\hlstd{,} \hlkwc{number} \hlstd{=} \hlnum{10}\hlstd{)}
+\hlcom{# use 50 boot strap estimates}
+\hlstd{tcboot} \hlkwb{=} \hlkwd{trainControl}\hlstd{(}\hlkwc{method} \hlstd{=} \hlstr{"boot"}\hlstd{,} \hlkwc{number} \hlstd{=} \hlnum{50}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+  \item Go through the same training procedure attempting to find the best KNN model.
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{mKNNcv5} \hlkwb{=} \hlkwd{train}\hlstd{(FE}\hlopt{~}\hlstd{.,} \hlkwc{data} \hlstd{= cars2010,} \hlkwc{method} \hlstd{=} \hlstr{"knn"}\hlstd{,}
+    \hlkwc{trControl} \hlstd{= tc5fold,} \hlkwc{tuneGrid} \hlstd{=} \hlkwd{data.frame}\hlstd{(}\hlkwc{k} \hlstd{=} \hlnum{2}\hlopt{:}\hlnum{20}\hlstd{))}
+
+\hlstd{mKNNcv10} \hlkwb{=} \hlkwd{train}\hlstd{(FE}\hlopt{~}\hlstd{.,} \hlkwc{data} \hlstd{= cars2010,} \hlkwc{method} \hlstd{=} \hlstr{"knn"}\hlstd{,}
+    \hlkwc{trControl} \hlstd{= tc10fold,} \hlkwc{tuneGrid} \hlstd{=} \hlkwd{data.frame}\hlstd{(}\hlkwc{k} \hlstd{=} \hlnum{2}\hlopt{:}\hlnum{20}\hlstd{))}
+
+\hlstd{mKNNboot} \hlkwb{=} \hlkwd{train}\hlstd{(FE}\hlopt{~}\hlstd{.,} \hlkwc{data} \hlstd{= cars2010,} \hlkwc{method} \hlstd{=} \hlstr{"knn"}\hlstd{,}
+    \hlkwc{trControl} \hlstd{= tcboot,} \hlkwc{tuneGrid} \hlstd{=} \hlkwd{data.frame}\hlstd{(}\hlkwc{k} \hlstd{=} \hlnum{2}\hlopt{:}\hlnum{20}\hlstd{))}
+\hlstd{mKNNcv5}\hlopt{$}\hlstd{bestTune}
+\end{alltt}
+\begin{verbatim}
+##   k
+## 1 2
+\end{verbatim}
+\begin{alltt}
+\hlstd{mKNNcv10}\hlopt{$}\hlstd{bestTune}
+\end{alltt}
+\begin{verbatim}
+##   k
+## 1 2
+\end{verbatim}
+\begin{alltt}
+\hlstd{mKNNboot}\hlopt{$}\hlstd{bestTune}
+\end{alltt}
+\begin{verbatim}
+##   k
+## 1 2
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+  \item How do the results vary based on the method of estimation?
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{#The k-fold cross validation estimates and bootstrap estimates all}
+\hlcom{#yield the same conclusion, however it is different to when we used}
+\hlcom{#validation set approach earlier. We could plot the results}
+\hlcom{# from each on one plot to compare further:}
+\hlkwd{plot}\hlstd{(}\hlnum{2}\hlopt{:}\hlnum{20}\hlstd{, mKNNboot}\hlopt{$}\hlstd{results[,}\hlnum{2}\hlstd{],} \hlkwc{type} \hlstd{=} \hlstr{"l"}\hlstd{,} \hlkwc{ylab} \hlstd{=} \hlstr{"RMSE"}\hlstd{,}
+     \hlkwc{xlab} \hlstd{=} \hlstr{"k"}\hlstd{,} \hlkwc{ylim} \hlstd{=} \hlkwd{c}\hlstd{(}\hlnum{3}\hlstd{,}\hlnum{6.5}\hlstd{))}
+\hlkwd{lines}\hlstd{(}\hlnum{2}\hlopt{:}\hlnum{20}\hlstd{, mKNNcv10}\hlopt{$}\hlstd{results[,}\hlnum{2}\hlstd{],} \hlkwc{col} \hlstd{=} \hlstr{"red"}\hlstd{)}
+\hlkwd{lines}\hlstd{(}\hlnum{2}\hlopt{:}\hlnum{20}\hlstd{, mKNNcv5}\hlopt{$}\hlstd{results[,}\hlnum{2}\hlstd{],} \hlkwc{col} \hlstd{=} \hlstr{"blue"}\hlstd{)}
+\hlkwd{lines}\hlstd{(}\hlnum{2}\hlopt{:}\hlnum{20}\hlstd{, mKNNvs2}\hlopt{$}\hlstd{results[,}\hlnum{2}\hlstd{],} \hlkwc{col} \hlstd{=} \hlstr{"green"}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+  \item Are the conclusions always the same?
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{#no see previous answer}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+\end{itemize}
+
+\noindent If we add the \cc{returnResamp = "all"} argument in the trainControl function we can plot the resampling distributions, see figure~\ref{fig:cvresamp}.
+
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{tc} \hlkwb{=} \hlkwd{trainControl}\hlstd{(}\hlkwc{method} \hlstd{=} \hlstr{"cv"}\hlstd{,} \hlkwc{number} \hlstd{=} \hlnum{15}\hlstd{,}
+                  \hlkwc{returnResamp} \hlstd{=} \hlstr{"all"}\hlstd{)}
+\hlstd{m} \hlkwb{=} \hlkwd{train}\hlstd{(FE}\hlopt{~}\hlstd{.,} \hlkwc{data} \hlstd{= cars2010,} \hlkwc{method} \hlstd{=} \hlstr{"knn"}\hlstd{,}
+          \hlkwc{tuneGrid} \hlstd{=} \hlkwd{data.frame}\hlstd{(}\hlkwc{k} \hlstd{=} \hlnum{1}\hlopt{:}\hlnum{15}\hlstd{),} \hlkwc{trControl} \hlstd{= tc)}
+\hlkwd{boxplot}\hlstd{(RMSE}\hlopt{~}\hlstd{k,} \hlkwc{data} \hlstd{= m}\hlopt{$}\hlstd{resample)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width = \textwidth]{graphics/p3-cvresamp-crop}
+  \caption{$15$ fold cross validation estimates of RMSE in a $K$ nearest neighbours model against number of nearest neighbours.}
+  \label{fig:cvresamp}
+\end{figure}
+
+We can overlay the information from each method using \cc{add = TRUE}. In addition we could compare the computational cost of each of the methods. The output list from a \cc{train} object contains timing information which can be accessed
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{m}\hlopt{$}\hlstd{time}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+\begin{itemize}
+  \item Which method is the most computationally efficient?
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{mKNNvs2}\hlopt{$}\hlstd{time}\hlopt{$}\hlstd{everything}
+\end{alltt}
+\begin{verbatim}
+##    user  system elapsed 
+##   0.608   0.000   0.606
+\end{verbatim}
+\begin{alltt}
+\hlstd{mKNNcv5}\hlopt{$}\hlstd{time}\hlopt{$}\hlstd{everything}
+\end{alltt}
+\begin{verbatim}
+##    user  system elapsed 
+##   1.820   0.000   1.816
+\end{verbatim}
+\begin{alltt}
+\hlstd{mKNNcv10}\hlopt{$}\hlstd{time}\hlopt{$}\hlstd{everything}
+\end{alltt}
+\begin{verbatim}
+##    user  system elapsed 
+##   2.392   0.000   2.393
+\end{verbatim}
+\begin{alltt}
+\hlstd{mKNNboot}\hlopt{$}\hlstd{time}\hlopt{$}\hlstd{everything}
+\end{alltt}
+\begin{verbatim}
+##    user  system elapsed 
+##   29.84    0.00   29.82
+\end{verbatim}
+\begin{alltt}
+\hlcom{#The validation set approach was quickest, however we must bear in mind that the conclusion here}
+\hlcom{#was different to the other cross validation approaches. The two k--fold cross validation estimates of RMSE and the bootstrap}
+\hlcom{#estimates all agreed with each other lending more weight to their conclusions. Plus we saw in the lectures that validation set}
+\hlcom{#approach was prone to highly variable estimates meaning we could get a different conclusion using a different hold out set.}
+\hlcom{#Either of the two k--fold cross validation methods would be preferable here.}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+\end{itemize}
+
+\section*{An example with more than two classes}
+
+The \cc{Glass} data set in the \cc{mlbench} package is a data frame containing examples of the chemical analysis of $7$ different types of glass. The goal is to be able to predict which category glass falls into based on the values of the $9$ predictors.
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{data}\hlstd{(Glass,} \hlkwc{package} \hlstd{=} \hlstr{"mlbench"}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+\noindent A logistic regression model is typically not suitable for more than $2$ classes, so try fitting the other models using a training set that consists of 90\% of the available data.\marginnote{The function \cc{createDataPartition} can be used here, see notes for a reminder.}
+
+
+\section*{Advanced}
+
+\marginnote{This section is intended for users who have a more in depth background to R programming. Attendance to the Programming in R course should be adequate background.}
+
+So far we have only used default functions and metrics to compare the performance of models, however we are not restricted to doing this. For example, training of classification models is typically more difficult when there is an imbalance in the two classes in the training set. Models trained from such data typically have high specificity but poor sensitivity or vice versa. Instead of training to maximise accuracy using data from the training set we could try to maximise according to some other criteria, namely sensitivity and specificity being as close to perfect as possible $(1, 1)$.
+
+To add our function we need to make sure we mirror the structure of those included in caret already.\marginnote{We can view a functions code by typing its name with no brackets.} The following code creates a new function that could be used to summarise a model
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{fourStats} \hlkwb{=} \hlkwa{function} \hlstd{(}\hlkwc{data}\hlstd{,} \hlkwc{lev} \hlstd{=} \hlkwa{NULL}\hlstd{,} \hlkwc{model} \hlstd{=} \hlkwa{NULL}\hlstd{) \{}
+  \hlcom{# This code will use the area under the ROC curve and the}
+  \hlcom{# sensitivity and specificity values from the built in}
+  \hlcom{# twoClassSummary function}
+  \hlstd{out} \hlkwb{=} \hlkwd{twoClassSummary}\hlstd{(data,} \hlkwc{lev} \hlstd{=} \hlkwd{levels}\hlstd{(data}\hlopt{$}\hlstd{obs),}
+                        \hlkwc{model} \hlstd{=} \hlkwa{NULL}\hlstd{)}
+  \hlcom{# The best possible model has sensitivity of 1 and}
+  \hlcom{# specifity of 1. How far are we from that value?}
+  \hlstd{coords} \hlkwb{=} \hlkwd{matrix}\hlstd{(}\hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,} \hlnum{1}\hlstd{, out[}\hlstr{"Spec"}\hlstd{], out[}\hlstr{"Sens"}\hlstd{]),}
+                   \hlkwc{ncol} \hlstd{=} \hlnum{2}\hlstd{,}
+                   \hlkwc{byrow} \hlstd{=} \hlnum{TRUE}\hlstd{)}
+  \hlcom{# return the disctance measure together with the}
+  \hlcom{# output from two class summary}
+  \hlkwd{c}\hlstd{(}\hlkwc{Dist} \hlstd{=} \hlkwd{dist}\hlstd{(coords)[}\hlnum{1}\hlstd{], out)}
+\hlstd{\}}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+\noindent we could then use this in the \cc{train} function
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{data}\hlstd{(Sonar,} \hlkwc{package} \hlstd{=} \hlstr{"mlbench"}\hlstd{)}
+\hlstd{mod} \hlkwb{=} \hlkwd{train}\hlstd{(Class} \hlopt{~} \hlstd{.,} \hlkwc{data} \hlstd{= Sonar,}
+              \hlkwc{method} \hlstd{=} \hlstr{"knn"}\hlstd{,}
+              \hlcom{# Minimize the distance to the perfect model}
+              \hlkwc{metric} \hlstd{=} \hlstr{"Dist"}\hlstd{,}
+              \hlkwc{maximize} \hlstd{=} \hlnum{FALSE}\hlstd{,}
+              \hlkwc{tuneLength} \hlstd{=} \hlnum{20}\hlstd{,}
+              \hlkwc{trControl} \hlstd{=}
+    \hlkwd{trainControl}\hlstd{(}\hlkwc{method} \hlstd{=} \hlstr{"cv"}\hlstd{,} \hlkwc{classProbs} \hlstd{=} \hlnum{TRUE}\hlstd{,}
+                     \hlkwc{summaryFunction} \hlstd{= fourStats))}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+\noindent The \cc{plot} function
+
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{plot}\hlstd{(mod)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+\begin{marginfigure}
+\centering
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=\maxwidth]{knitr_figure/solutions2-figure3-1} 
+
+}
+
+
+
+\end{knitrout}
+  \caption{Plot of the distance from a perfect classifier measured by sensitivity and specificity against tuning parameter for a $k$ nearest neighbour model.}
+  \label{fig:newsummary}
+\end{marginfigure}
+
+\noindent will then show the profile of the resampling estimates of our chosen statistic against the tuning parameters, see figure~\ref{fig:newsummary}.
+
+\begin{itemize}
+  \item Have a go at writing a function that will allow a regression model to be chosen by the absolute value of the largest residual and try using it to fit a couple of models.
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{maxabsres} \hlkwb{=} \hlkwa{function}\hlstd{(}\hlkwc{data}\hlstd{,} \hlkwc{lev} \hlstd{=} \hlkwa{NULL}\hlstd{,} \hlkwc{model} \hlstd{=} \hlkwa{NULL}\hlstd{)\{}
+    \hlstd{m} \hlkwb{=} \hlkwd{max}\hlstd{(}\hlkwd{abs}\hlstd{(data}\hlopt{$}\hlstd{obs} \hlopt{-} \hlstd{data}\hlopt{$}\hlstd{pred))}
+    \hlkwd{return}\hlstd{(}\hlkwd{c}\hlstd{(}\hlstr{"Max"} \hlstd{= m))}
+\hlstd{\}}
+\hlcom{# Test with pls regression}
+\hlstd{tccustom} \hlkwb{=} \hlkwd{trainControl}\hlstd{(}\hlkwc{method} \hlstd{=} \hlstr{"cv"}\hlstd{,}
+                     \hlkwc{summaryFunction} \hlstd{= maxabsres)}
+\hlstd{mPLScustom} \hlkwb{=} \hlkwd{train}\hlstd{(FE}\hlopt{~}\hlstd{.,} \hlkwc{data} \hlstd{= cars2010,}
+                   \hlkwc{method} \hlstd{=} \hlstr{"pls"}\hlstd{,}
+               \hlkwc{tuneGrid} \hlstd{=} \hlkwd{data.frame}\hlstd{(}\hlkwc{ncomp} \hlstd{=} \hlnum{1}\hlopt{:}\hlnum{6}\hlstd{),}
+               \hlkwc{trControl} \hlstd{= tccustom,}
+               \hlkwc{metric} \hlstd{=} \hlstr{"Max"}\hlstd{,} \hlkwc{maximize} \hlstd{=} \hlnum{FALSE}\hlstd{)}
+\hlcom{# success}
+\hlcom{# not to suggest this is a good choice of metric}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+\end{itemize}
+
+
+\end{document}
