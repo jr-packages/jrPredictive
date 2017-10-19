@@ -205,28 +205,28 @@
 \end{alltt}
 \begin{verbatim}
 ##    user  system elapsed 
-##   0.816   0.004   0.819
+##   0.728   0.004   0.733
 \end{verbatim}
 \begin{alltt}
 \hlstd{mLMLOOCV}\hlopt{$}\hlstd{times}\hlopt{$}\hlstd{everything}
 \end{alltt}
 \begin{verbatim}
 ##    user  system elapsed 
-##   6.784   0.004   6.789
+##   7.164   0.000   7.165
 \end{verbatim}
 \begin{alltt}
 \hlstd{mLMKFOLD}\hlopt{$}\hlstd{times}\hlopt{$}\hlstd{everything}
 \end{alltt}
 \begin{verbatim}
 ##    user  system elapsed 
-##   0.572   0.000   0.572
+##     0.5     0.0     0.5
 \end{verbatim}
 \begin{alltt}
 \hlstd{mLMBOOT}\hlopt{$}\hlstd{times}\hlopt{$}\hlstd{everything}
 \end{alltt}
 \begin{verbatim}
 ##    user  system elapsed 
-##   0.632   0.000   0.631
+##   0.584   0.000   0.583
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
@@ -266,11 +266,11 @@
 \end{alltt}
 \begin{verbatim}
 ##   Folds  Time Estimate
-## 1     2 0.464    4.620
-## 2     5 0.436    4.614
-## 3    10 0.476    4.600
-## 4    15 0.504    4.579
-## 5    20 0.508    4.565
+## 1     2 0.440    4.620
+## 2     5 0.448    4.614
+## 3    10 0.464    4.600
+## 4    15 0.496    4.579
+## 5    20 0.528    4.565
 \end{verbatim}
 \begin{alltt}
 \hlcom{# as there are more folds it takes longer to compute,}
