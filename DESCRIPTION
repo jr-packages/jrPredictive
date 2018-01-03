@@ -30,7 +30,9 @@ Imports:
     kernlab,
     e1071,
     ggplot2,
-    threejs, nlme
+    threejs, nlme,
+    jrData
+Remotes: jr-packages/jrData
 Suggests:
     knitr,
     shiny, rmarkdown
