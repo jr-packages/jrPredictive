@@ -100,7 +100,7 @@ library("caret")
 data(diamonds, package = "ggplot2")
 i = sample(nrow(diamonds), 1000) # some subset to help plotting
 diamonds = diamonds[i,]
-m = train(price~., method = "pls", data = diamonds, 
+m = train(price~., method = "pcr", data = diamonds, 
     tuneLength = 10)
 # a plot of model object gives us the resampling 
 # information across tuning parameters
