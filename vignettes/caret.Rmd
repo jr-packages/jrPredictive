@@ -12,6 +12,10 @@ output: knitr:::html_vignette
 
 The caret package~\cite{caret} is a great little package that creates an interface to a myriad of model building tools included in various packages in the R universe. It is particularly nice as it provides a single set of functions that can be used for fitting, prediction and assessment of models, removing the need to remember any syntactic differences over the other packages. It is essentially a fancy wrapper for all of the modelling tools that we might want to use. To install this package:
 
+```{r echo = FALSE}
+set.seed(1)
+```
+
 ```{r eval = FALSE}
 install.packages("caret")
 ```
@@ -100,7 +104,7 @@ library("caret")
 data(diamonds, package = "ggplot2")
 i = sample(nrow(diamonds), 1000) # some subset to help plotting
 diamonds = diamonds[i,]
-m = train(price~., method = "pcr", data = diamonds, 
+m = train(price~., method = "pls", data = diamonds, 
     tuneLength = 10)
 # a plot of model object gives us the resampling 
 # information across tuning parameters
