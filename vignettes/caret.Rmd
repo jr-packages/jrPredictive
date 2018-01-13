@@ -101,6 +101,7 @@ help file you can use `?plot.<<object type>>` notation:
 Try the following example
 ```{r fig.keep="none", message = FALSE}
 library("caret")
+library("pls")
 data(diamonds, package = "ggplot2")
 i = sample(nrow(diamonds), 1000) # some subset to help plotting
 diamonds = diamonds[i,]
