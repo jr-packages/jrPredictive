@@ -81,43 +81,6 @@
 
 \maketitle% this prints the handout title, author, and date
 
-\section*{Course R package}
-
-Installing the course R package\sidenote{A package is an \textit{add-on} or a \textit{module}.
-It provides additional functions and data.} is straightforward. First install \cc{drat}\sidenote{\cc{drat} is a package that makes it easy to host and distribute packages.}
-\begin{knitrout}\small
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
-\begin{alltt}
-\hlkwd{install.packages}\hlstd{(}\hlstr{"drat"}\hlstd{)}
-\end{alltt}
-\end{kframe}
-\end{knitrout}
-\noindent Then
-\begin{knitrout}\small
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
-\begin{alltt}
-\hlstd{drat}\hlopt{::}\hlkwd{addRepo}\hlstd{(}\hlstr{"rcourses"}\hlstd{)}
-\hlkwd{install.packages}\hlstd{(}\hlstr{"jrPredictive"}\hlstd{)}
-\end{alltt}
-\end{kframe}
-\end{knitrout}
-\noindent This R package contains copies of the practicals, solutions and data sets that we require. It will also
-automatically install any packages\sidenote{For example, we will need the \cc{caret}, \cc{mlbench}, \cc{pROC} and \cc{splines} to name a few.} that we use during the course. To load the course package, use
-\begin{knitrout}\small
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
-\begin{alltt}
-\hlkwd{library}\hlstd{(}\hlstr{"jrPredictive"}\hlstd{)}
-\end{alltt}
-\end{kframe}
-\end{knitrout}
-\noindent During this practical we will mainly use thehe \cc{caret} package, we should load that package as well
-\begin{knitrout}\small
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
-\begin{alltt}
-\hlkwd{library}\hlstd{(}\hlstr{"caret"}\hlstd{)}
-\end{alltt}
-\end{kframe}
-\end{knitrout}
 
 \section*{The \cc{cars2010} data set}
 
@@ -161,7 +124,7 @@ each predictor
 \begin{knitrout}\small
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
-{\centering \includegraphics[width=\maxwidth]{knitr_figure/solutions1-unnamed-chunk-8-1} 
+{\centering \includegraphics[width=\maxwidth]{knitr_figure/solutions1-unnamed-chunk-8-1}
 
 }
 
@@ -217,7 +180,7 @@ each predictor
 \begin{knitrout}\small
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
-{\centering \includegraphics[width=\maxwidth]{knitr_figure/solutions1-figure2-1} 
+{\centering \includegraphics[width=\maxwidth]{knitr_figure/solutions1-figure2-1}
 
 }
 
@@ -361,7 +324,7 @@ The \cc{jrPredictive} package contains a \cc{plot3d} function to help with viewi
 \begin{knitrout}\small
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
-{\centering \includegraphics[width=\maxwidth]{knitr_figure/solutions1-figure3-1} 
+{\centering \includegraphics[width=\maxwidth]{knitr_figure/solutions1-figure3-1}
 
 }
 
