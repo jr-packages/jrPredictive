@@ -1,0 +1,19 @@
+---
+title: "Practical 2"
+author: "Jumping Rivers"
+output: rmarkdown::pdf_document
+vignette: >
+  %\VignetteIndexEntry{practical2}
+  \usepackage[utf8]{inputenc}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r, setup, echo = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, child = 'practical2_content.Rmd'}
+```
+

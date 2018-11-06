@@ -1,0 +1,477 @@
+# Predictive Analytics: practical 3 
+
+## The `OJ` data set
+
+The `OJ` data set from the `ISLR` package contains information on which of two brands of orange juice customers purchased^[The response variable is `Purchase`.] and can be loaded using
+
+
+```{r}
+data(OJ, package = "ISLR")
+```
+
+
+
+\noindent After loading the `caret` and `jrPredictive` package
+
+
+```{r, message = FALSE}
+library("caret")
+library("jrPredictive")
+```
+
+
+
+\noindent make an initial examination of the relationships between each of the predictors and the response^[Use the `plot` function with a model formula or the `pairs` function.]
+
+
+```{r, eval = FALSE}
+par(mfrow = c(4, 5), mar = c(4, 0.5, 0.5, 0.5))
+plot(Purchase ~ ., data = OJ)
+```
+
+
+
+## Initial model building
+
+
+- To begin, create a logistic regression model that takes into consideration the prices of the two brands of orange juice, `PriceCH` and `PriceMM`. Hint: Use the `train` function, with `method = 'glm'`.  Look at the help page for the data set to understand what these variables represent.
+```{r}
+m1 = train(Purchase ~ PriceCH + PriceMM,
+    data = OJ, method = "glm")
+```
+  - What proportion of purchases does this model get right?
+```{r}
+mean(predict(m1) != OJ$Purchase)
+```
+  - How does this compare to if we used no model?
+```{r}
+# with no model we essentially predict according to
+# proportion of observations in data
+probs = table(OJ$Purchase)/nrow(OJ)
+preds = sample(levels(OJ$Purchase), prob = probs)
+mean(preds != OJ$Purchase)
+```
+
+
+## Visualising the boundary
+
+The `jrPredictive` package contains following code produces a plot of the decision boundary as seen in figure 1.
+
+```{r, fig.cap = "Examining the decision boundary for orange juice brand purchases by price.", echo = TRUE, fig.keep="all"}
+boundary_plot(m1,OJ$PriceCH, OJ$PriceMM, OJ$Purchase,
+              xlab="Price CH", ylab="Price MM")
+```
+
+
+\noindent Run the boundary code above, and make sure you get a similar plot.
+
+  - What happens if we add an interaction term? How does the boundary change?
+```{r}
+# We now have a curved decision boundary.
+# There are two regions of where we would predict MM, bottom left, and a tiny one up in the top right.
+```
+- Try adding polynomial terms.
+
+
+## Using all of the predictors
+
+
+  - Fit a logistic regression model using all of the predictors.
+```{r, warning = FALSE}
+mLM = train(Purchase ~ ., data = OJ, method = "glm")
+```
+  - Is there a problem?
+```{r}
+## YES!
+```
+
+\noindent We can view the most recent warning messages by using the `warnings` function
+
+
+```{r, echo = TRUE}
+warnings()
+```
+
+
+
+
+
+\noindent This suggests some rank-deficient fit problems,
+
+- Look at the final model, you should notice that a number of parameters have not been estimated
+```{r, echo = TRUE, eval = FALSE}
+m_log$finalModel
+```
+
+\noindent The help page
+
+```{r, echo = TRUE}
+?ISLR::OJ
+```
+
+
+\noindent gives further insight: the `PriceDiff` variable is a linear combination of `SalePriceMM` and `SalePriceCH` so we should remove this. In addition the `StoreID` and `STORE` variable are different encodings of the same information so we should remove one of these too. We also have `DiscCH` and `DiscMM` which are the differences between `PriceCH` and `SalePriceCH` and `PriceMM` and `SalePriceMM` respectively and `ListPriceDiff` is a linear combination of these prices. Removing all of these variables allows the model to be fit and all parameters to be estimated.^[This is to highlight that we need to understand what we have in our data.]
+
+
+```{r, echo = TRUE}
+OJsub = OJ[, !(colnames(OJ) %in% c("STORE", "SalePriceCH",
+    "SalePriceMM", "PriceDiff", "ListPriceDiff"))]
+OJsub$Store7 = as.numeric(OJsub$Store7) - 1
+m_log = train(Purchase ~ ., data = OJsub, method = "glm")
+```
+
+
+
+\noindent The problem of linear combinations of predictors can be shown with this simple theoretical example. Suppose we have a response $y$ and three predictors $x_1$, $x_2$ and the linear combination $x_3 = (x_1 + x_2)$. On fitting a linear model we try to find estimates of the parameters in the equation
+
+$$y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \beta_3 (x_1 + x_2).$$
+
+\noindent However we could just as easily rewrite this as
+
+$$y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \beta_3 (x_1 + x_2) \\
+= \beta_0 + (\beta_1 + \beta_3) x_1 + (\beta_2 + \beta_3) x_2 \\
+= \beta_0 + \beta_1^{\ast} x_1 + \beta_2^{\ast} x_2.$$
+This leads to a rank-deficient model matrix, essentially we can never find the value of the $\beta_3$ due to the fact we have the linear combination of predictors.
+
+We could achieve the same using the `caret` package function `findLinearCombos`. The function takes a model matrix as an argument. We can create such a matrix using the
+`model.matrix` function with our formula object
+
+
+```{r, echo = TRUE}
+remove = findLinearCombos(model.matrix(Purchase ~ ., data = OJ))
+```
+
+
+\noindent The output list has a component called `remove` suggesting which variables should be removed to get rid of linear combinations
+
+
+```{r, echo = TRUE}
+(badvar = colnames(OJ)[remove$remove])
+```
+
+```{r, echo = TRUE}
+OJsub = OJ[, -remove$remove]
+```
+
+
+  - How accurate is this new model using more predictors?
+```{r}
+# the corrected model
+remove = findLinearCombos(model.matrix(Purchase~., data = OJ))
+(badvar = colnames(OJ)[remove$remove])
+```
+```{r}
+OJsub = OJ[,-(remove$remove)]
+mLM = train(Purchase~., data = OJsub, method = "glm")
+mean(predict(mLM,OJsub) == OJsub$Purchase)
+```
+  - What are the values of sensitivity and specificity?
+```{r}
+## could use confusionMatrix
+(cmLM = confusionMatrix(predict(mLM,OJsub),OJsub$Purchase))
+```
+```{r}
+# or
+sensitivity(predict(mLM,OJsub),OJsub$Purchase)
+```
+```{r}
+specificity(predict(mLM,OJsub),OJsub$Purchase)
+```
+  - What does this mean?
+```{r}
+#The model is fairly good at picking up both positive events, person buys CH, and negative events, MM.
+```
+
+
+
+## ROC curves
+
+<!-- \begin{marginfigure} -->
+
+<!-- { \includegraphics[width=\maxwidth]{knitr_figure/practical2-figure2-1} -->
+
+<!--   \caption{An example of a ROC curve for the logistic regression classifier. We can overlay ROC curves by adding the `add = TRUE` argument.} -->
+<!--   \label{fig:roc} -->
+<!-- \end{marginfigure} -->
+
+If we were interested in the area under the ROC curve, we could retrain the model using the `twoClassSummary` function as an argument to a train control object. Alternatively we can
+use the `pROC` package
+
+
+
+```{r, echo = TRUE, message = FALSE, warning = FALSE, error=FALSE}
+library("pROC")
+```
+
+
+
+\noindent This also allows us to view the ROC curve, via
+
+
+
+```{r, echo = TRUE}
+curve = roc(response = OJsub$Purchase,
+  predictor = predict(m_log, type = "prob")[,"CH"])
+## this makes CH the event of interest
+plot(curve, legacy.axes = TRUE)
+```
+
+
+
+
+## Other classification models
+
+
+  - Try fitting models using the other classification algorithms we have seen so far. To begin with, just have two covariates and use the `boundary_plot` function to visualise the results.
+
+```{r, message = FALSE}
+mKNN = train(Purchase~., data = OJsub, method = "knn")
+mLDA = train(Purchase~., data = OJsub, method = "lda")
+mQDA = train(Purchase~., data = OJsub, method = "qda")
+cmKNN = confusionMatrix(predict(mKNN,OJsub),OJsub$Purchase)
+cmLDA = confusionMatrix(predict(mLDA,OJsub),OJsub$Purchase)
+cmQDA = confusionMatrix(predict(mQDA,OJsub),OJsub$Purchase)
+(info = data.frame(Model = c("logistic","knn","lda","qda"),
+           Accuracy = c(cmLM$overall["Accuracy"],
+               cmKNN$overall["Accuracy"],
+               cmLDA$overall["Accuracy"],
+               cmQDA$overall["Accuracy"]),
+           Sensitivity = c(cmLM$byClass["Sensitivity"],
+               cmKNN$byClass["Sensitivity"],
+               cmLDA$byClass["Sensitivity"],
+               cmQDA$byClass["Sensitivity"]),
+           Specificity = c(cmLM$byClass["Specificity"],
+               cmKNN$byClass["Specificity"],
+               cmLDA$byClass["Specificity"],
+               cmQDA$byClass["Specificity"])))
+```
+
+  - How do they compare?
+
+```{r}
+#Logistic regression and LDA have highest accuracy, QDA is poorest at classifying events, KNN gives most false positives
+```
+
+  - How does varying the number of nearest neighbours in a KNN affect the model fit?
+  
+```{r}
+#Accuracy increases at first with knn before then getting worse after a peak value of 9.
+(mKNN2 = train(Purchase~., data = OJsub, method = "knn",
+    tuneGrid = data.frame(k = 1:30)))
+```
+
+
+
+\noindent The KNN algorithm described in the notes can also be used for regression problems. In this case the predicted response is the mean of the $k$ nearest neighbours.
+
+  - Try fitting the KNN model for the regression problem in practical 1.
+```{r, message=FALSE, warning = FALSE}
+library("jrPredictive")
+data(FuelEconomy, package = "AppliedPredictiveModeling")
+regKNN = train(FE~., data = cars2010, method = "knn")
+regLM = train(FE~., data = cars2010, method = "lm")
+regKNN= validate(regKNN)
+regLM = validate(regLM)
+mark(regKNN)
+mark(regLM)
+```
+
+  - How does this compare to the linear regression models?
+
+```{r}
+#The KNN regression model is not as good as the linear model at predicting the test set. It overestimates more at the lower end.
+```
+
+
+
+
+## Resampling methods
+
+
+  - Fit a KNN regression model to the `cars2010` data set with `FE` as the response.
+```{r, echo = TRUE}
+data(FuelEconomy, package = "AppliedPredictiveModeling")
+```
+```{r}
+mKNN = train(FE ~ ., method = "knn", data = cars2010)
+```
+  - Estimate test error using the validation set approach explored at the beginning of the chapter
+```{r}
+# create a random sample to hold out
+i = sample(nrow(cars2010), 100)
+# set the train control object
+tc = trainControl(method = "cv", number = 1,
+    index = list(Fold1 = (1:nrow(cars2010))[-i]))
+# fit the model using this train control object
+mKNNvs = train(FE~., method = "knn", data = cars2010,
+    trControl = tc)
+```
+
+  - Using the same validation set, estimate the performance of the k nearest neighbours algorithm for different values of $k$.
+```{r}
+mKNNvs2 = train(FE~., method = "knn", data = cars2010,
+     trControl = tc, tuneGrid = data.frame(k= 2:20))
+```
+  - Which model is chosen as the best when using the validation set approach?
+```{r}
+## With set.seed(1)
+mKNNvs2$bestTune
+```
+
+- Create new `trainControl` objects to specify the use of 5 fold and 10 fold cross validation as well as bootstrapping to estimate test MSE.
+```{r}
+tc5fold = trainControl(method = "cv", number = 5)
+tc10fold = trainControl(method = "cv", number = 10)
+# use 50 boot strap estimates
+tcboot = trainControl(method = "boot", number = 50)
+```
+
+  - Go through the same training procedure attempting to find the best KNN model.
+```{r}
+mKNNcv5 = train(FE~., data = cars2010, method = "knn",
+    trControl = tc5fold, tuneGrid = data.frame(k = 2:20))
+
+mKNNcv10 = train(FE~., data = cars2010, method = "knn",
+    trControl = tc10fold, tuneGrid = data.frame(k = 2:20))
+
+mKNNboot = train(FE~., data = cars2010, method = "knn",
+    trControl = tcboot, tuneGrid = data.frame(k = 2:20))
+mKNNcv5$bestTune
+mKNNcv10$bestTune
+mKNNboot$bestTune
+```
+
+  - How do the results vary based on the method of estimation?
+```{r}
+#The k-fold cross validation estimates and bootstrap estimates all
+#yield the same conclusion, however it is different to when we used
+#validation set approach earlier. We could plot the results
+# from each on one plot to compare further:
+plot(2:20, mKNNboot$results[,2], type = "l", ylab = "RMSE",
+     xlab = "k", ylim = c(3,6.5))
+lines(2:20, mKNNcv10$results[,2], col = "red")
+lines(2:20, mKNNcv5$results[,2], col = "blue")
+lines(2:20, mKNNvs2$results[,2], col = "green")
+```
+  - Are the conclusions always the same?
+```{r}
+#no see previous answer
+```
+
+
+
+\noindent If we add the `returnResamp = "all"` argument in the trainControl function we can plot the resampling distributions, see figure 2.
+
+```{r "cvresamp", fig.cap = "15 fold cross validation estimates of RMSE in a K nearest neighbours model against number of nearest neighbours.", echo=TRUE, fig.keep="all"}
+tc = trainControl(method = "cv", number = 15, returnResamp = "all")
+m = train(FE ~ ., data = cars2010, method = "knn", tuneGrid = data.frame(k = 1:15),
+    trControl = tc)
+boxplot(RMSE ~ k, data = m$resample)
+```
+
+We can overlay the information from each method using `add = TRUE`. In addition we could compare the computational cost of each of the methods. The output list from a `train` object contains timing information which can be accessed
+
+```{r, echo = TRUE}
+m$time
+```
+
+  - Which method is the most computationally efficient?
+```{r}
+mKNNvs2$time$everything
+mKNNcv5$time$everything
+mKNNcv10$time$everything
+mKNNboot$time$everything
+
+#The validation set approach was quickest, however we must bear in mind that the conclusion here
+#was different to the other cross validation approaches. The two k-fold cross validation estimates of RMSE and the bootstrap
+#estimates all agreed with each other lending more weight to their conclusions. Plus we saw in the lectures that validation set
+#approach was prone to highly variable estimates meaning we could get a different conclusion using a different hold out set.
+#Either of the two k--fold cross validation methods would be preferable here.
+```
+
+
+## An example with more than two classes
+
+The `Glass` data set in the `mlbench` package is a data frame containing examples of the chemical analysis of $7$ different types of glass. The goal is to be able to predict which category glass falls into based on the values of the $9$ predictors.
+
+
+```{r, echo = TRUE}
+data(Glass, package = "mlbench")
+```
+
+
+
+\noindent A logistic regression model is typically not suitable for more than $2$ classes, so try fitting the other models using a training set that consists of 90\% of the available data. Hint: The function `createDataPartition` can be used here, see notes for a reminder.
+
+
+## Advanced
+
+This section is intended for users who have a more in depth background to R programming. Attendance to the Programming in R course should be adequate background.
+
+So far we have only used default functions and metrics to compare the performance of models, however we are not restricted to doing this. For example, training of classification models is typically more difficult when there is an imbalance in the two classes in the training set. Models trained from such data typically have high specificity but poor sensitivity or vice versa. Instead of training to maximise accuracy using data from the training set we could try to maximise according to some other criteria, namely sensitivity and specificity being as close to perfect as possible $(1, 1)$.
+
+To add our function we need to make sure we mirror the structure of those included in caret already.We can view a functions code by typing its name with no brackets. The following code creates a new function that could be used to summarise a model
+
+
+```{r, echo = TRUE}
+fourStats = function(data, lev = NULL, model = NULL){
+    # This code will use the area under the ROC curve and the
+    # sensitivity and specificity values from the built in
+    # twoClassSummary function
+    out = twoClassSummary(data, lev = levels(data$obs), model = NULL)
+    # The best possible model has sensitivity of 1 and
+    # specifity of 1. How far are we from that value?
+    coords = matrix(c(1, 1, out["Spec"], out["Sens"]), ncol = 2,
+        byrow = TRUE)
+    # return the disctance measure together with the output
+    # from two class summary
+    c(Dist = dist(coords)[1], out)
+}
+
+```
+
+
+\noindent we could then use this in the `train` function
+
+
+```{r, echo = TRUE}
+data(Sonar, package = "mlbench")
+mod = train(Class ~ ., data = Sonar,
+              method = "knn",
+              # Minimize the distance to the perfect model
+              metric = "Dist",
+              maximize = FALSE,
+              tuneLength = 20,
+              trControl =
+    trainControl(method = "cv", classProbs = TRUE,
+                     summaryFunction = fourStats))
+```
+
+\noindent The `plot` function
+
+```{r, fig.cap="Plot of the distance from a perfect classifier measured by sensitivity and specificity against tuning parameter for a k nearest neighbour model.", echo = TRUE, fig.keep="all"}
+plot(mod)
+```
+
+\noindent will then show the profile of the resampling estimates of our chosen statistic against the tuning parameters, see figure 2.
+
+
+  - Have a go at writing a function that will allow a regression model to be chosen by the absolute value of the largest residual and try using it to fit a couple of models.
+
+```{r}
+maxabsres = function(data, lev = NULL, model = NULL){
+    m = max(abs(data$obs - data$pred))
+    return(c("Max" = m))
+}
+# Test with pls regression
+tccustom = trainControl(method = "cv",
+                     summaryFunction = maxabsres)
+mPLScustom = train(FE~., data = cars2010,
+                   method = "pls",
+               tuneGrid = data.frame(ncomp = 1:6),
+               trControl = tccustom,
+               metric = "Max", maximize = FALSE)
+# success
+# not to suggest this is a good choice of metric
+```
+

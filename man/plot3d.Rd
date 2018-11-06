@@ -4,7 +4,8 @@
 \alias{plot3d}
 \title{This is a function for assisting with 3d plots for the predictive analytics course}
 \usage{
-plot3d(model, xvar, yvar, zvar, phi = 30, theta = 30, points = FALSE, ...)
+plot3d(model, xvar, yvar, zvar, phi = 30, theta = 30, points = FALSE,
+  ...)
 }
 \arguments{
 \item{model}{A model object as returned by the caret::train function}
