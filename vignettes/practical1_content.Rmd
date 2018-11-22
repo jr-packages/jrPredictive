@@ -218,7 +218,7 @@ plot3d(m3, cars2010$EngDispl, cars2010$NumCyl, cars2010$FE,
 
 \noindent We can also examine just the data interactively, via
 
-```{r, echo = TRUE}
+```{r, echo = TRUE, eval = FALSE}
 threejs::scatterplot3js(cars2010$EngDispl, cars2010$NumCyl,
     cars2010$FE, size = 0.5)
 ```
