@@ -1,9 +1,9 @@
 ---
-title: "Practical 2"
+title: "Practical 1 Solutions"
 author: "Jumping Rivers"
 output: rmarkdown::pdf_document
 vignette: >
-  %\VignetteIndexEntry{practical2}
+  %\VignetteIndexEntry{solutions1}
   \usepackage[utf8]{inputenc}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options: 
@@ -14,6 +14,6 @@ editor_options:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r, child = 'practical2_content.Rmd'}
+```{r, child = 'practical1_content.Rmd'}
 ```
 

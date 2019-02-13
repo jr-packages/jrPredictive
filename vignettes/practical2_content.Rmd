@@ -1,7 +1,7 @@
 ```{r, echo = FALSE, message = FALSE}
 library("caret")
 data(FuelEconomy, package = "AppliedPredictiveModeling")
-set.seed(25)
+set.seed(2019)
 ```
 
 
@@ -39,7 +39,7 @@ res = resid(mLM)
 index = sample(nrow(cars2010),floor(nrow(cars2010)/2))
 ## set up a train control object
 tcVS = trainControl(method = "cv", index = list(
-    Fold1 = (1:nrow(cars2010))[-index]))
+    Fold1 = (1:nrow(cars2010))[-index]), number = 1)
 ## train the model
 mLMVS = train(FE~EngDispl+NumCyl+NumGears, method = "lm",
     data = cars2010, trControl = tcVS)
@@ -51,6 +51,7 @@ mLMVS = train(FE~EngDispl+NumCyl+NumGears, method = "lm",
 
 ```{r}
 # it's larger, often training error under estimates test error
+# although not always
 getTrainPerf(mLMVS)
 trainRMSE
 ```
@@ -136,15 +137,16 @@ mLM20 = train(FE~EngDispl+NumCyl+NumGears, method = "lm",
 # as there are more folds it takes longer to compute,
 # not an issue with such a small model but something
 # to consider on more complicated models.
-# Estimates are going down as the number of folds increases.
+# Estimates are, on the whole, going down as the number of folds increases.
 # This is because for each held out fold we are using a greater
 # proportion of the data in training so expect to get a better
 # model.
+# We would expect this error rate estimate to settle down 
+# as the number of folds approches the number of data points
 ```
 
 
-- Experiment with adding terms to the model, transformations of the predictors and interactions say and use cross validation to estimate test error for each. What is the best model you can find? You can still use the `validate` and `mark` functions to look at how your models fair on the unseen data.
-
+- Experiment with adding terms to the model, transformations of the predictors and interactions say, and use cross validation to estimate test error for each. What is the best model you can find? 
 
 ## Penalised regression
 
@@ -154,17 +156,21 @@ The `diabetes` data set in the `lars` package contains measurements of a number 
 ```{r, echo = TRUE}
 ## load the data in 
 data(diabetes, package = "lars")
-diabetesdata = cbind(diabetes$x,"y" = diabetes$y)
+diabetesdata = as.data.frame(cbind(diabetes$x,"y" = diabetes$y))
 ```
 
-- Try fitting a lasso, ridge and elastic net model using all of the main effects, pairwise interactions and square terms from each of the predictors. See notes for shortcut on creating model formula. Also be aware that if the predictor is a factor a polynomial term doesn't make sense
+- Try fitting a lasso, ridge and elastic net model using all of the main effects, squares of those, plus pairwise interactions of each of the predictors. Note that a square term does not make sense for a categorical variable (such as sex here). One way to create this formula for this data is
+
+```{r, eval = TRUE, echo = TRUE}
+# extract the predictors for which squaring makes sense
+preds = setdiff(colnames(diabetesdata),c("sex","y"))
+square_terms = paste0("+ I(",preds,"^2)", collapse = " ")
+other_terms = ".:."
+modelformula = as.formula(paste("y ~",other_terms,square_terms))
+```
+
 
 ```{r, warning=FALSE}
-modelformula = as.formula(paste("y~(.)^2 + ",
-    paste0("I(",
-           colnames(diabetesdata),"^2)",
-          collapse = "+")
-    ))
 mLASSO = train(modelformula, data = diabetesdata,
     method = "lasso")
 mRIDGE = train(modelformula, data = diabetesdata,
@@ -174,7 +180,7 @@ mENET = train(modelformula, data = diabetesdata,
 ```
 
 
-Note, `fraction = 0` is the same as the null model. `y ~ (.) ^ 2` is short hand for a model that includes pairwise interactions for each predictor, so if we use this we should only need to add the square terms.
+Note, `fraction = 0` is the same as the null model.
 
 - Try to narrow in on the region of lowest RMSE for each model, don't forget about the `tuneGrid' argument to the train function.
 
@@ -199,45 +205,45 @@ mLASSOfiner$results
 mLASSOfiner$bestTune
 ```
 
-```{r}
-mRIDGEfine = train(modelformula,data = diabetesdata,
-    method = "ridge",
-    tuneGrid = data.frame(lambda = seq(0,0.1,by = 0.01)))
-mRIDGEfine$results
-```
+<!-- ```{r} -->
+<!-- mRIDGEfine = train(modelformula,data = diabetesdata, -->
+<!--     method = "ridge", -->
+<!--     tuneGrid = data.frame(lambda = seq(0,0.1,by = 0.01))) -->
+<!-- mRIDGEfine$results -->
+<!-- ``` -->
 
-```{r}
-mRIDGEfiner = train(modelformula,data = diabetesdata,
-    method = "ridge",
-    tuneGrid = data.frame(lambda = seq(0.005,0.03,by = 0.001)))
-mRIDGEfiner$results
-```
+<!-- ```{r} -->
+<!-- mRIDGEfiner = train(modelformula,data = diabetesdata, -->
+<!--     method = "ridge", -->
+<!--     tuneGrid = data.frame(lambda = seq(0.005,0.03,by = 0.001))) -->
+<!-- mRIDGEfiner$results -->
+<!-- ``` -->
 
-```{r}
-# the best one
-mRIDGEfiner$bestTune
-```
+<!-- ```{r} -->
+<!-- # the best one -->
+<!-- mRIDGEfiner$bestTune -->
+<!-- ``` -->
 
-```{r}
-mENETfine = train(modelformula, data = diabetesdata,
-    method = "enet", tuneGrid = expand.grid(
-                         lambda = c(0.001,0.01,0.1),
-                         fraction = c(0.4,0.5,0.6)
-    ))
-mENETfine$results
-```
+<!-- ```{r} -->
+<!-- mENETfine = train(modelformula, data = diabetesdata, -->
+<!--     method = "enet", tuneGrid = expand.grid( -->
+<!--                          lambda = c(0.001,0.01,0.1), -->
+<!--                          fraction = c(0.4,0.5,0.6) -->
+<!--     )) -->
+<!-- mENETfine$results -->
+<!-- ``` -->
 
-```{r}
-mENETfiner = train(modelformula, data = diabetesdata,
-    method = "enet", tuneGrid = expand.grid(
-                         lambda = seq(0.001,0.1,length.out = 10),
-                         fraction = 0.5))
-mENETfiner$results
-```
+<!-- ```{r} -->
+<!-- mENETfiner = train(modelformula, data = diabetesdata, -->
+<!--     method = "enet", tuneGrid = expand.grid( -->
+<!--                          lambda = seq(0.001,0.1,length.out = 10), -->
+<!--                          fraction = 0.5)) -->
+<!-- mENETfiner$results -->
+<!-- ``` -->
 
-```{r}
-mENETfiner$bestTune
-```
+<!-- ```{r} -->
+<!-- mENETfiner$bestTune -->
+<!-- ``` -->
 
 
 
@@ -263,19 +269,13 @@ coefLASSO = predict(mLASSOfiner$finalModel, mode = "fraction",
         )
 sum(coefLASSO$coefficients != 0)
 ```
-```{r}
-## [1] 57
-```
+
 ```{r, eval = FALSE}
-coefENET= predict(mENETfiner$finalModel, mode = "fraction",
+coefENET= predict(mENET$finalModel, mode = "fraction",
         type = "coefficient", s = mENET$bestTune$fraction
         )
 sum(coefENET$coefficients != 0)
 ```
-```{r}
-## [1] 24
-```
-
 
 - How do these models compare to principal components and partial least squares regression?
 
@@ -284,19 +284,9 @@ mPCR = train(modelformula, data = diabetesdata, method = "pcr",
              tuneGrid = data.frame(ncomp = 1:7))
 mPLS = train(modelformula, data = diabetesdata, method = "pls",
              tuneGrid = data.frame(ncomp= 1:7))
-mPLS2 = train(modelformula, data = diabetesdata, method = "pls",
-             tuneGrid = data.frame(ncomp= 5:15))
 getTrainPerf(mLASSOfiner)
-getTrainPerf(mRIDGEfiner)
-getTrainPerf(mENETfiner)
+getTrainPerf(mRIDGE)
+getTrainPerf(mENET)
 getTrainPerf(mPCR)
-getTrainPerf(mPLS2)
+getTrainPerf(mPLS)
 ```
-
-```{r, eval = FALSE}
-#The elastic net model has the lowest estimated test error, all are fairly similar. The elastic net model suggests only 21 non-zero
-#coefficients out of all of those included in the model.
-```
-
-
-

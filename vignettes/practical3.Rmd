@@ -1,9 +1,9 @@
 ---
-title: "Practical 3 Solutions"
+title: "Practical 3"
 author: "Jumping Rivers"
 output: rmarkdown::pdf_document
 vignette: >
-  %\VignetteIndexEntry{practical3_solutions}
+  %\VignetteIndexEntry{practical3}
   \usepackage[utf8]{inputenc}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options: 
@@ -11,7 +11,7 @@ editor_options:
 ---
 
 ```{r, setup, echo = FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE, results = "hide", fig.keep = "none")
 ```
 
 ```{r, child = 'practical3_content.Rmd'}

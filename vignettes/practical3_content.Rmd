@@ -25,8 +25,9 @@ library("jrPredictive")
 
 
 ```{r, eval = FALSE}
-par(mfrow = c(4, 5), mar = c(4, 0.5, 0.5, 0.5))
+op = par(mfrow = c(4, 5), mar = c(4, 0.5, 0.5, 0.5))
 plot(Purchase ~ ., data = OJ)
+par(op)
 ```
 
 
@@ -41,7 +42,7 @@ m1 = train(Purchase ~ PriceCH + PriceMM,
 ```
   - What proportion of purchases does this model get right?
 ```{r}
-mean(predict(m1) != OJ$Purchase)
+mean(predict(m1) == OJ$Purchase)
 ```
   - How does this compare to if we used no model?
 ```{r}
@@ -49,7 +50,7 @@ mean(predict(m1) != OJ$Purchase)
 # proportion of observations in data
 probs = table(OJ$Purchase)/nrow(OJ)
 preds = sample(levels(OJ$Purchase), prob = probs)
-mean(preds != OJ$Purchase)
+mean(preds == OJ$Purchase)
 ```
 
 
@@ -78,7 +79,7 @@ boundary_plot(m1,OJ$PriceCH, OJ$PriceMM, OJ$Purchase,
 
   - Fit a logistic regression model using all of the predictors.
 ```{r, warning = FALSE}
-mLM = train(Purchase ~ ., data = OJ, method = "glm")
+m_log = train(Purchase ~ ., data = OJ, method = "glm")
 ```
   - Is there a problem?
 ```{r}
@@ -91,9 +92,6 @@ mLM = train(Purchase ~ ., data = OJ, method = "glm")
 ```{r, echo = TRUE}
 warnings()
 ```
-
-
-
 
 
 \noindent This suggests some rank-deficient fit problems,
@@ -115,8 +113,7 @@ m_log$finalModel
 
 ```{r, echo = TRUE}
 OJsub = OJ[, !(colnames(OJ) %in% c("STORE", "SalePriceCH",
-    "SalePriceMM", "PriceDiff", "ListPriceDiff"))]
-OJsub$Store7 = as.numeric(OJsub$Store7) - 1
+    "SalePriceMM", "PriceDiff", "ListPriceDiff", "Store7"))]
 m_log = train(Purchase ~ ., data = OJsub, method = "glm")
 ```
 
@@ -197,17 +194,11 @@ specificity(predict(mLM,OJsub),OJsub$Purchase)
 If we were interested in the area under the ROC curve, we could retrain the model using the `twoClassSummary` function as an argument to a train control object. Alternatively we can
 use the `pROC` package
 
-
-
 ```{r, echo = TRUE, message = FALSE, warning = FALSE, error=FALSE}
 library("pROC")
 ```
 
-
-
 \noindent This also allows us to view the ROC curve, via
-
-
 
 ```{r, echo = TRUE}
 curve = roc(response = OJsub$Purchase,
@@ -248,10 +239,6 @@ cmQDA = confusionMatrix(predict(mQDA,OJsub),OJsub$Purchase)
 
   - How do they compare?
 
-```{r}
-#Logistic regression and LDA have highest accuracy, QDA is poorest at classifying events, KNN gives most false positives
-```
-
   - How does varying the number of nearest neighbours in a KNN affect the model fit?
   
 ```{r}
@@ -270,124 +257,114 @@ library("jrPredictive")
 data(FuelEconomy, package = "AppliedPredictiveModeling")
 regKNN = train(FE~., data = cars2010, method = "knn")
 regLM = train(FE~., data = cars2010, method = "lm")
-regKNN= validate(regKNN)
-regLM = validate(regLM)
-mark(regKNN)
-mark(regLM)
 ```
 
   - How does this compare to the linear regression models?
 
-```{r}
-#The KNN regression model is not as good as the linear model at predicting the test set. It overestimates more at the lower end.
-```
+
+<!-- ## Resampling methods -->
+
+
+<!--   - Fit a KNN regression model to the `cars2010` data set with `FE` as the response. -->
+<!-- ```{r, echo = TRUE} -->
+<!-- data(FuelEconomy, package = "AppliedPredictiveModeling") -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- mKNN = train(FE ~ ., method = "knn", data = cars2010) -->
+<!-- ``` -->
+<!--   - Estimate test error using the validation set approach explored at the beginning of the chapter -->
+<!-- ```{r} -->
+<!-- # create a random sample to hold out -->
+<!-- i = sample(nrow(cars2010), 100) -->
+<!-- # set the train control object -->
+<!-- tc = trainControl(method = "cv", number = 1, -->
+<!--     index = list(Fold1 = (1:nrow(cars2010))[-i])) -->
+<!-- # fit the model using this train control object -->
+<!-- mKNNvs = train(FE~., method = "knn", data = cars2010, -->
+<!--     trControl = tc) -->
+<!-- ``` -->
+
+<!--   - Using the same validation set, estimate the performance of the k nearest neighbours algorithm for different values of $k$. -->
+<!-- ```{r} -->
+<!-- mKNNvs2 = train(FE~., method = "knn", data = cars2010, -->
+<!--      trControl = tc, tuneGrid = data.frame(k= 2:20)) -->
+<!-- ``` -->
+<!--   - Which model is chosen as the best when using the validation set approach? -->
+<!-- ```{r} -->
+<!-- ## With set.seed(1) -->
+<!-- mKNNvs2$bestTune -->
+<!-- ``` -->
+
+<!-- - Create new `trainControl` objects to specify the use of 5 fold and 10 fold cross validation as well as bootstrapping to estimate test MSE. -->
+<!-- ```{r} -->
+<!-- tc5fold = trainControl(method = "cv", number = 5) -->
+<!-- tc10fold = trainControl(method = "cv", number = 10) -->
+<!-- # use 50 boot strap estimates -->
+<!-- tcboot = trainControl(method = "boot", number = 50) -->
+<!-- ``` -->
+
+<!--   - Go through the same training procedure attempting to find the best KNN model. -->
+<!-- ```{r} -->
+<!-- mKNNcv5 = train(FE~., data = cars2010, method = "knn", -->
+<!--     trControl = tc5fold, tuneGrid = data.frame(k = 2:20)) -->
+
+<!-- mKNNcv10 = train(FE~., data = cars2010, method = "knn", -->
+<!--     trControl = tc10fold, tuneGrid = data.frame(k = 2:20)) -->
+
+<!-- mKNNboot = train(FE~., data = cars2010, method = "knn", -->
+<!--     trControl = tcboot, tuneGrid = data.frame(k = 2:20)) -->
+<!-- mKNNcv5$bestTune -->
+<!-- mKNNcv10$bestTune -->
+<!-- mKNNboot$bestTune -->
+<!-- ``` -->
+
+<!--   - How do the results vary based on the method of estimation? -->
+<!-- ```{r} -->
+<!-- #The k-fold cross validation estimates and bootstrap estimates all -->
+<!-- #yield the same conclusion, however it is different to when we used -->
+<!-- #validation set approach earlier. We could plot the results -->
+<!-- # from each on one plot to compare further: -->
+<!-- plot(2:20, mKNNboot$results[,2], type = "l", ylab = "RMSE", -->
+<!--      xlab = "k", ylim = c(3,6.5)) -->
+<!-- lines(2:20, mKNNcv10$results[,2], col = "red") -->
+<!-- lines(2:20, mKNNcv5$results[,2], col = "blue") -->
+<!-- lines(2:20, mKNNvs2$results[,2], col = "green") -->
+<!-- ``` -->
+<!--   - Are the conclusions always the same? -->
+<!-- ```{r} -->
+<!-- #no see previous answer -->
+<!-- ``` -->
 
 
 
+<!-- \noindent If we add the `returnResamp = "all"` argument in the trainControl function we can plot the resampling distributions, see figure 2. -->
 
-## Resampling methods
+<!-- ```{r "cvresamp", fig.cap = "15 fold cross validation estimates of RMSE in a K nearest neighbours model against number of nearest neighbours.", echo=TRUE, fig.keep="all"} -->
+<!-- tc = trainControl(method = "cv", number = 15, returnResamp = "all") -->
+<!-- m = train(FE ~ ., data = cars2010, method = "knn", tuneGrid = data.frame(k = 1:15), -->
+<!--     trControl = tc) -->
+<!-- boxplot(RMSE ~ k, data = m$resample) -->
+<!-- ``` -->
 
+<!-- We can overlay the information from each method using `add = TRUE`. In addition we could compare the computational cost of each of the methods. The output list from a `train` object contains timing information which can be accessed -->
 
-  - Fit a KNN regression model to the `cars2010` data set with `FE` as the response.
-```{r, echo = TRUE}
-data(FuelEconomy, package = "AppliedPredictiveModeling")
-```
-```{r}
-mKNN = train(FE ~ ., method = "knn", data = cars2010)
-```
-  - Estimate test error using the validation set approach explored at the beginning of the chapter
-```{r}
-# create a random sample to hold out
-i = sample(nrow(cars2010), 100)
-# set the train control object
-tc = trainControl(method = "cv", number = 1,
-    index = list(Fold1 = (1:nrow(cars2010))[-i]))
-# fit the model using this train control object
-mKNNvs = train(FE~., method = "knn", data = cars2010,
-    trControl = tc)
-```
+<!-- ```{r, echo = TRUE} -->
+<!-- m$time -->
+<!-- ``` -->
 
-  - Using the same validation set, estimate the performance of the k nearest neighbours algorithm for different values of $k$.
-```{r}
-mKNNvs2 = train(FE~., method = "knn", data = cars2010,
-     trControl = tc, tuneGrid = data.frame(k= 2:20))
-```
-  - Which model is chosen as the best when using the validation set approach?
-```{r}
-## With set.seed(1)
-mKNNvs2$bestTune
-```
+<!--   - Which method is the most computationally efficient? -->
+<!-- ```{r} -->
+<!-- mKNNvs2$time$everything -->
+<!-- mKNNcv5$time$everything -->
+<!-- mKNNcv10$time$everything -->
+<!-- mKNNboot$time$everything -->
 
-- Create new `trainControl` objects to specify the use of 5 fold and 10 fold cross validation as well as bootstrapping to estimate test MSE.
-```{r}
-tc5fold = trainControl(method = "cv", number = 5)
-tc10fold = trainControl(method = "cv", number = 10)
-# use 50 boot strap estimates
-tcboot = trainControl(method = "boot", number = 50)
-```
-
-  - Go through the same training procedure attempting to find the best KNN model.
-```{r}
-mKNNcv5 = train(FE~., data = cars2010, method = "knn",
-    trControl = tc5fold, tuneGrid = data.frame(k = 2:20))
-
-mKNNcv10 = train(FE~., data = cars2010, method = "knn",
-    trControl = tc10fold, tuneGrid = data.frame(k = 2:20))
-
-mKNNboot = train(FE~., data = cars2010, method = "knn",
-    trControl = tcboot, tuneGrid = data.frame(k = 2:20))
-mKNNcv5$bestTune
-mKNNcv10$bestTune
-mKNNboot$bestTune
-```
-
-  - How do the results vary based on the method of estimation?
-```{r}
-#The k-fold cross validation estimates and bootstrap estimates all
-#yield the same conclusion, however it is different to when we used
-#validation set approach earlier. We could plot the results
-# from each on one plot to compare further:
-plot(2:20, mKNNboot$results[,2], type = "l", ylab = "RMSE",
-     xlab = "k", ylim = c(3,6.5))
-lines(2:20, mKNNcv10$results[,2], col = "red")
-lines(2:20, mKNNcv5$results[,2], col = "blue")
-lines(2:20, mKNNvs2$results[,2], col = "green")
-```
-  - Are the conclusions always the same?
-```{r}
-#no see previous answer
-```
-
-
-
-\noindent If we add the `returnResamp = "all"` argument in the trainControl function we can plot the resampling distributions, see figure 2.
-
-```{r "cvresamp", fig.cap = "15 fold cross validation estimates of RMSE in a K nearest neighbours model against number of nearest neighbours.", echo=TRUE, fig.keep="all"}
-tc = trainControl(method = "cv", number = 15, returnResamp = "all")
-m = train(FE ~ ., data = cars2010, method = "knn", tuneGrid = data.frame(k = 1:15),
-    trControl = tc)
-boxplot(RMSE ~ k, data = m$resample)
-```
-
-We can overlay the information from each method using `add = TRUE`. In addition we could compare the computational cost of each of the methods. The output list from a `train` object contains timing information which can be accessed
-
-```{r, echo = TRUE}
-m$time
-```
-
-  - Which method is the most computationally efficient?
-```{r}
-mKNNvs2$time$everything
-mKNNcv5$time$everything
-mKNNcv10$time$everything
-mKNNboot$time$everything
-
-#The validation set approach was quickest, however we must bear in mind that the conclusion here
-#was different to the other cross validation approaches. The two k-fold cross validation estimates of RMSE and the bootstrap
-#estimates all agreed with each other lending more weight to their conclusions. Plus we saw in the lectures that validation set
-#approach was prone to highly variable estimates meaning we could get a different conclusion using a different hold out set.
-#Either of the two k--fold cross validation methods would be preferable here.
-```
+<!-- #The validation set approach was quickest, however we must bear in mind that the conclusion here -->
+<!-- #was different to the other cross validation approaches. The two k-fold cross validation estimates of RMSE and the bootstrap -->
+<!-- #estimates all agreed with each other lending more weight to their conclusions. Plus we saw in the lectures that validation set -->
+<!-- #approach was prone to highly variable estimates meaning we could get a different conclusion using a different hold out set. -->
+<!-- #Either of the two k--fold cross validation methods would be preferable here. -->
+<!-- ``` -->
 
 
 ## An example with more than two classes
@@ -401,8 +378,7 @@ data(Glass, package = "mlbench")
 
 
 
-\noindent A logistic regression model is typically not suitable for more than $2$ classes, so try fitting the other models using a training set that consists of 90\% of the available data. Hint: The function `createDataPartition` can be used here, see notes for a reminder.
-
+\noindent A logistic regression model is typically not suitable for more than $2$ classes, so try fitting the other models using a training set that consists of 90\% of the available data. 
 
 ## Advanced
 
@@ -423,7 +399,7 @@ fourStats = function(data, lev = NULL, model = NULL){
     # specifity of 1. How far are we from that value?
     coords = matrix(c(1, 1, out["Spec"], out["Sens"]), ncol = 2,
         byrow = TRUE)
-    # return the disctance measure together with the output
+    # return the distance measure together with the output
     # from two class summary
     c(Dist = dist(coords)[1], out)
 }

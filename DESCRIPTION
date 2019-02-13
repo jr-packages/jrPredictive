@@ -1,7 +1,7 @@
 Package: jrPredictive
 Type: Package
 Title: Predictive Analytics by Jumping Rivers
-Version: 1.1.1
+Version: 1.1.2
 Authors@R: c(
   person("Jamie", "Owen", email="jamie.owen@jumpingrivers.com", role =c("aut")),
   person("Colin", "Gillespie", email="csgillespie@jumpingrivers.com", role =c("aut", "cre")))
@@ -35,7 +35,7 @@ Imports:
 Remotes: jr-packages/jrData
 Suggests:
     knitr,
-    shiny, rmarkdown, colorspace
+    shiny, rmarkdown, colorspace, MASS
 VignetteBuilder: knitr
 LazyData: true
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.1

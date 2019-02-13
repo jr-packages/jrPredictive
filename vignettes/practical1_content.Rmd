@@ -1,4 +1,3 @@
-#Predictive Analytics: practical 1 solutions
 
 ## Course R package
 
@@ -14,7 +13,7 @@ install.packages("drat")
 
 
 ```{r, eval = FALSE, echo = TRUE}
-drat::addRepo("rcourses")
+drat::addRepo("jr-packages")
 install.packages("jrPredictive")
 ```
 
@@ -27,10 +26,10 @@ library("jrPredictive")
 ```
 
 
-\noindent During this practical we will mainly use thehe `caret` package, we should load that package as well
+\noindent During this practical we will mainly use the `caret` package, we should load that package as well
 
 
-```{r, echo = TRUE}
+```{r, echo = TRUE, message = FALSE}
 library("caret")
 ```
 
@@ -45,6 +44,7 @@ The data is part of the `AppliedPredictiveModeling` package and can be loaded by
 
 ```{r, echo = TRUE}
 data(FuelEconomy, package = "AppliedPredictiveModeling")
+head(cars2010)
 ```
 
 

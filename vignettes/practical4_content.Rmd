@@ -5,7 +5,7 @@
 The final practical is intended to let you have a go fitting models to any of the data sets that we have seen so far. Or indeed feel free to use your own data sets.
 
 - One possible avenue to explore is the `cars2010` data set from the first practical.
-- You could use the validate and mark functions to see how the more complex models compare with the simpler models from yesterday and to see who can make the best predictive model.
+- You could see how the more complex models compare with the simpler models from yesterday and to see who can make the best predictive model.
 - Models to try could be the regression trees, neural networks, support vector machines, anything that we have covered in the notes. Remember to visualise boundaries using the `plot3d` and `boundary_plot` functions.
 
 
@@ -49,7 +49,7 @@ customModel = list(
     class = c("numeric"),
     label = c("Probability Cutoff")
   ),
-  grid = function(x, y, len = NULL) {
+  grid = function(x, y, len = NULL, search = "grid") {
      data.frame(threshold = seq(.01, .99, length = len))
      },
   loop = modInfo$loop,
@@ -57,7 +57,7 @@ customModel = list(
     if (length(levels(y)) != 2)
        # we have only added the warning here
        stop("This works only for 2-class problems")
-    lda(x, y, ...)
+    MASS::lda(x, y, ...)
   },
   predict = function(modelFit, newdata, submodels = NULL) {
     class1p = predict(modelFit, newdata)$posterior[, 1]
@@ -88,21 +88,22 @@ customModel = list(
   - predict - add the mechanism by which to make prediction based on threshold rather than the default
 
 
-\noindent If define the fourStats function from practical 3 we can then fit the custom model
+\noindent If we define a metric function we can then fit the custom model
 
 
 
 ```{r, echo = TRUE, error = TRUE}
-fourStats = function(data, lev = NULL, model = NULL) {
+fiveStats = function(data, lev = NULL, model = NULL) {
     out = twoClassSummary(data, lev = levels(data$obs), model = NULL)
+    acc = mean(data$pred == data$obs)
     coords = matrix(c(1, 1, out["Spec"], out["Sens"]), ncol = 2,
         byrow = TRUE)
-    c(Dist = dist(coords)[1], out)
+    c(Dist = dist(coords)[1], out, Accuracy = acc)
 }
 set.seed(9)
 data(Sonar, package = "mlbench")
 mod = train(Class ~ ., data = Sonar, method = customModel,
-    metric = "Dist", maximize = FALSE, tuneLength = 20, trControl = trainControl(method = "cv", classProbs = TRUE, summaryFunction = fourStats))
+    metric = "Dist", maximize = FALSE, tuneLength = 20, trControl = trainControl(method = "cv", classProbs = TRUE, summaryFunction = fiveStats))
 ```
 
 
@@ -111,8 +112,7 @@ mod = train(Class ~ ., data = Sonar, method = customModel,
 
 ```{r, echo = TRUE, fig.cap = "Using the standard caret plot functions with our custom model.", fig.keep="all", error = TRUE}
 plot(mod)
-plot(varImp)
+plot(varImp(mod))
 ```
-
 
 \noindent We can still use the model for predictions too, give it a try.
