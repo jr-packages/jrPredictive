@@ -31,7 +31,8 @@ Imports:
     e1071,
     ggplot2,
     threejs, nlme,
-    jrData
+    jrData,
+    tufte
 Remotes: jr-packages/jrData
 Suggests:
     knitr,
