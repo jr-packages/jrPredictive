@@ -31,12 +31,11 @@ Imports:
     e1071,
     ggplot2,
     threejs, nlme,
-    jrData,
-    tufte
+    jrData
 Remotes: jr-packages/jrData
 Suggests:
     knitr,
-    shiny, rmarkdown, colorspace, MASS
+    shiny, rmarkdown, colorspace, MASS, tufte
 VignetteBuilder: knitr
 LazyData: true
 RoxygenNote: 6.1.1
