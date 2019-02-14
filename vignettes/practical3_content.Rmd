@@ -58,7 +58,7 @@ mean(preds == OJ$Purchase)
 
 The `jrPredictive` package contains following code produces a plot of the decision boundary as seen in figure 1.
 
-```{r, fig.cap = "Examining the decision boundary for orange juice brand purchases by price.", echo = TRUE, fig.keep="all"}
+```{r, fig.cap = "Examining the decision boundary for orange juice brand purchases by price.", echo = TRUE, fig.keep="all", fig.margin=TRUE}
 boundary_plot(m1,OJ$PriceCH, OJ$PriceMM, OJ$Purchase,
               xlab="Price CH", ylab="Price MM")
 ```
@@ -125,10 +125,13 @@ $$y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \beta_3 (x_1 + x_2).$$
 
 \noindent However we could just as easily rewrite this as
 
-$$y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \beta_3 (x_1 + x_2) \\
-= \beta_0 + (\beta_1 + \beta_3) x_1 + (\beta_2 + \beta_3) x_2 \\
-= \beta_0 + \beta_1^{\ast} x_1 + \beta_2^{\ast} x_2.$$
-This leads to a rank-deficient model matrix, essentially we can never find the value of the $\beta_3$ due to the fact we have the linear combination of predictors.
+\begin{align*}
+y &= \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \beta_3 (x_1 + x_2)  \\
+&= \beta_0 + (\beta_1 + \beta_3) x_1 + (\beta_2 + \beta_3) x_2 \\
+&= \beta_0 + \beta_1^{\ast} x_1 + \beta_2^{\ast} x_2.
+\end{align*}
+
+\noindent This leads to a rank-deficient model matrix, essentially we can never find the value of the $\beta_3$ due to the fact we have the linear combination of predictors.
 
 We could achieve the same using the `caret` package function `findLinearCombos`. The function takes a model matrix as an argument. We can create such a matrix using the
 `model.matrix` function with our formula object
@@ -425,7 +428,7 @@ mod = train(Class ~ ., data = Sonar,
 
 \noindent The `plot` function
 
-```{r, fig.cap="Plot of the distance from a perfect classifier measured by sensitivity and specificity against tuning parameter for a k nearest neighbour model.", echo = TRUE, fig.keep="all"}
+```{r, fig.cap="Plot of the distance from a perfect classifier measured by sensitivity and specificity against tuning parameter for a k nearest neighbour model.", echo = TRUE, fig.keep="all", fig.margin=TRUE}
 plot(mod)
 ```
 

@@ -1,7 +1,9 @@
 ---
 title: "Practical 4"
 author: "Jumping Rivers"
-output: rmarkdown::pdf_document
+output: 
+  tufte::tufte_handout:
+    latex_engine: xelatex
 vignette: >
   %\VignetteIndexEntry{practical4}
   \usepackage[utf8]{inputenc}

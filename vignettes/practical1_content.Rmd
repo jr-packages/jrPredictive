@@ -1,22 +1,13 @@
 
 ## Course R package
 
-Installing the course R package is straightforward. First install `drat`, a package that makes it easy to host and distribute packages.
-
+Installing the course R package is straightforward. 
 
 ```{r, eval = FALSE, echo = TRUE}
 install.packages("drat")
-```
-
-
-\noindent Then
-
-
-```{r, eval = FALSE, echo = TRUE}
 drat::addRepo("jr-packages")
 install.packages("jrPredictive")
 ```
-
 
 \noindent This R package contains copies of the practicals, solutions and data sets that we require. It will also automatically install any packages, that we use during the course. For example, we will need the `caret`, `mlbench`, `pROC` and `splines` to name a few. To load the course package, use
 
@@ -238,7 +229,7 @@ How is prediction affected in each case? Don't forget to examine residuals, R sq
 
 A couple of other data sets that can be used to try fitting linear regression models.
 \begin{table}[!h]
-
+  \centering
   \begin{tabular}{@{} lll @{}}
   \hline
   Data set & Package & Response \\
