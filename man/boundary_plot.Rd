@@ -6,7 +6,7 @@
 \usage{
 boundary_plot(model, x, y, z, xlab = all.vars(formula(model))[2],
   ylab = all.vars(formula(model))[3], jitter = TRUE, xlim = range(x),
-  ylim = range(y), ...)
+  ylim = range(y))
 }
 \arguments{
 \item{model}{A caret classification model}
@@ -22,6 +22,10 @@ boundary_plot(model, x, y, z, xlab = all.vars(formula(model))[2],
 \item{ylab}{Y-axis label}
 
 \item{jitter}{Default \code{TRUE}. Should the points be jittered.}
+
+\item{xlim}{x axis limit}
+
+\item{ylim}{y axis limit}
 }
 \description{
 Convience function for creating boundary plots
