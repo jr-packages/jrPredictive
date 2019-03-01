@@ -5,8 +5,8 @@
 \title{Convience function for creating boundary plots}
 \usage{
 boundary_plot(model, x, y, z, xlab = all.vars(formula(model))[2],
-  ylab = all.vars(formula(model))[3], levels = 0.5, lwd = 2,
-  jitter = TRUE, ...)
+  ylab = all.vars(formula(model))[3], jitter = TRUE, xlim = range(x),
+  ylim = range(y), ...)
 }
 \arguments{
 \item{model}{A caret classification model}
@@ -21,13 +21,7 @@ boundary_plot(model, x, y, z, xlab = all.vars(formula(model))[2],
 
 \item{ylab}{Y-axis label}
 
-\item{levels}{contour levels, default prob=0.5}
-
-\item{lwd}{Line width of the contour plot}
-
 \item{jitter}{Default \code{TRUE}. Should the points be jittered.}
-
-\item{...}{Additional arguments passed to the contour function}
 }
 \description{
 Convience function for creating boundary plots

@@ -1,7 +1,7 @@
 Package: jrPredictive
 Type: Package
 Title: Predictive Analytics by Jumping Rivers
-Version: 1.1.3
+Version: 1.1.4
 Authors@R: c(
   person("Jamie", "Owen", email="jamie.owen@jumpingrivers.com", role =c("aut")),
   person("Colin", "Gillespie", email="csgillespie@jumpingrivers.com", role =c("aut", "cre")))
