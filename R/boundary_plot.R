@@ -17,8 +17,8 @@ boundary_plot = function(model, x, y, z,
                          jitter = TRUE, xlim = range(x), ylim = range(y)) {
 
   cols = function(alpha = 255)
-    c(rgb(187,95,76, maxColorValue = 255, alpha = alpha),
-           rgb(114,155,87, maxColorValue = 255, alpha = alpha))
+    c(rgb(187, 95, 76, maxColorValue = 255, alpha = alpha),
+           rgb(114, 155, 87, maxColorValue = 255, alpha = alpha))
   ## Set up a grid for prediction
 
   x_seq = seq(xlim[1], xlim[2], length.out = 100)
@@ -31,7 +31,7 @@ boundary_plot = function(model, x, y, z,
   # make the predictions
   predictions = predict(model, grid, type = "prob")
   # turn the predictions into a matrix for a contour plot
-  predmat = matrix(predictions[,2], nrow = 100)
+  predmat = matrix(predictions[, 2], nrow = 100)
 
   # Nice par set-up
   op  = par(mar = c(3, 3, 2, 1), mgp = c(2, 0.4, 0), tck = -0.01,
@@ -48,13 +48,13 @@ boundary_plot = function(model, x, y, z,
 
 
   ticks_y = axTicks(2)
-  axis(2,ticks_y, ticks_y,
+  axis(2, ticks_y, ticks_y,
        tick = TRUE,
        lwd = 0,
        lwd.ticks = 1, col = "grey50", col.axis = "grey30")
 
   ticks_x = axTicks(1)
-  axis(1,ticks_x, ticks_x,
+  axis(1, ticks_x, ticks_x,
        tick = TRUE, lwd = 0,
        lwd.ticks = 1, col = "grey50", col.axis = "grey30")
 

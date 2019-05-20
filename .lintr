@@ -1,0 +1,4 @@
+linters: with_defaults(
+    assignment_linter = NULL,
+    camel_case_linter = NULL
+   )

@@ -20,10 +20,10 @@ plot3d(model, xvar, yvar, zvar, phi = 30, theta = 30, points = FALSE,
 
 \item{theta}{Angles defining the viewing direction. theta gives the azimuthal direction. Default 30.}
 
-\item{points}{A logical argument if TRUE the resultant plot will also 
-show the observed points around the fitted surface with red points 
-highlighting those for which the model under estimates and blue points 
-for those points which are below the surface. 
+\item{points}{A logical argument if TRUE the resultant plot will also
+show the observed points around the fitted surface with red points
+highlighting those for which the model under estimates and blue points
+for those points which are below the surface.
 Note this can get messy when there are large numbers of points.}
 
 \item{...}{Other parameters to be passed to the persp function}
