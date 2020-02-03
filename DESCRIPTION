@@ -17,7 +17,7 @@ Description: Functions and datasets for the predictive analytics
 License: GPL-3 | GPL-2
 URL: https://www.jumpingrivers.com
 Depends:
-    R (>= 3.1.0)
+    R (>= 3.5.0)
 Imports:
     AppliedPredictiveModeling,
     caret,

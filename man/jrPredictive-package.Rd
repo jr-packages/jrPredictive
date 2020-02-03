@@ -6,6 +6,7 @@
 \alias{jrPredictive}
 \title{Predictive analytics}
 \description{
-Functions and datasets used for the predictive analytics course by Jumping Rivers.
+Functions and datasets used for the predictive analytics
+course by Jumping Rivers.
 }
 \keyword{package}

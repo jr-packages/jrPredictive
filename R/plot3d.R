@@ -18,8 +18,10 @@
 #' @export
 #' @examples
 #' data(advertising)
-#' m = caret::train(Sales~TV + Radio, data = advertising, method = "lm")
-#' plot3d(m,advertising$TV, advertising$Radio, advertising$Sales, points = TRUE)
+#' m = caret::train(Sales~TV + Radio,
+#' data = advertising, method = "lm")
+#' plot3d(m,advertising$TV, advertising$Radio,
+#' advertising$Sales, points = TRUE)
 plot3d = function(model, xvar, yvar, zvar,
                   phi = 30, theta = 30, points = FALSE, ...) {
   op = par(mar = c(1, 1, 1, 1)); on.exit(par(op))
@@ -35,7 +37,7 @@ plot3d = function(model, xvar, yvar, zvar,
   names = all.vars(formula(model))
   p = persp(x, y, z, xlab = names[2], ylab = names[3], zlab = names[1],
             phi = phi, theta = theta, ...)
-  if (points){
+  if (points) {
     zvar_fit = fitted(model)
     i_pos = 1 + (zvar_fit > zvar)
     obs = trans3d(xvar, yvar, zvar, p)
