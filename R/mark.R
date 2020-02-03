@@ -4,7 +4,7 @@
 #' @return NULL
 #' @importFrom stats lowess
 #' @export
-mark = function(model){
+mark = function(model) {
   if (!inherits(model, "validated")){
     stop("Make sure to validate your model before trying to mark it")
   }

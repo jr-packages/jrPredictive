@@ -4,8 +4,7 @@
 \alias{plot3d}
 \title{This is a function for assisting with 3d plots for the predictive analytics course}
 \usage{
-plot3d(model, xvar, yvar, zvar, phi = 30, theta = 30, points = FALSE,
-  ...)
+plot3d(model, xvar, yvar, zvar, phi = 30, theta = 30, points = FALSE, ...)
 }
 \arguments{
 \item{model}{A model object as returned by the caret::train function}
@@ -16,9 +15,11 @@ plot3d(model, xvar, yvar, zvar, phi = 30, theta = 30, points = FALSE,
 
 \item{zvar}{The response variable being predicted}
 
-\item{phi}{Angle defining the viewing direction.  phi give the colatitude direction. Default 30.}
+\item{phi}{Angle defining the viewing direction.
+phi give the colatitude direction. Default 30.}
 
-\item{theta}{Angles defining the viewing direction. theta gives the azimuthal direction. Default 30.}
+\item{theta}{Angles defining the viewing direction.
+theta gives the azimuthal direction. Default 30.}
 
 \item{points}{A logical argument if TRUE the resultant plot will also
 show the observed points around the fitted surface with red points
@@ -33,6 +34,8 @@ This is a function for assisting with 3d plots for the predictive analytics cour
 }
 \examples{
 data(advertising)
-m = caret::train(Sales~TV + Radio, data = advertising, method = "lm")
-plot3d(m,advertising$TV, advertising$Radio, advertising$Sales, points = TRUE)
+m = caret::train(Sales~TV + Radio,
+data = advertising, method = "lm")
+plot3d(m,advertising$TV, advertising$Radio,
+advertising$Sales, points = TRUE)
 }

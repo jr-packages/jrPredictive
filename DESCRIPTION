@@ -1,41 +1,58 @@
-Package: jrPredictive
 Type: Package
+Package: jrPredictive
 Title: Predictive Analytics by Jumping Rivers
-Version: 1.1.5
-Authors@R: c(
-  person("Jamie", "Owen", email="jamie.owen@jumpingrivers.com", role =c("aut")),
-  person("Colin", "Gillespie", email="csgillespie@jumpingrivers.com", role =c("aut", "cre")))
+Version: 1.1.6
+Authors@R: 
+    c(person(given = "Jamie",
+             family = "Owen",
+             role = "aut",
+             email = "jamie@jumpingrivers.com"),
+      person(given = "Colin",
+             family = "Gillespie",
+             role = c("aut", "cre"),
+             email = "csgillespie@jumpingrivers.com"))
 Maintainer: Colin Gillespie <colin@jumpingrivers.com>
-Description: Functions and datasets for the predictive analytics course.
+Description: Functions and datasets for the predictive analytics
+    course.
 License: GPL-3 | GPL-2
-Depends:
-    R (>= 3.1.0)
 URL: https://www.jumpingrivers.com
+Depends:
+    R (>= 3.5.0)
 Imports:
-    caret,
     AppliedPredictiveModeling,
-    ISLR,
-    pROC,
-    splines,
-    partykit,
-    mlbench,
-    gridExtra,
-    elasticnet,
-    pls,
-    lars,
-    gam,
-    ipred,
-    randomForest,
-    gbm,
-    kernlab,
+    caret,
     e1071,
+    elasticnet,
+    gam,
+    gbm,
     ggplot2,
-    threejs, nlme,
-    jrData
-Remotes: jr-packages/jrData
+    gridExtra,
+    ipred,
+    ISLR,
+    jrData,
+    kernlab,
+    lars,
+    mlbench,
+    nlme,
+    partykit,
+    pls,
+    pROC,
+    randomForest,
+    splines,
+    threejs
 Suggests:
+    colorspace,
     knitr,
-    shiny, rmarkdown, colorspace, MASS, tufte, testthat, lintr
-VignetteBuilder: knitr
+    lintr,
+    MASS,
+    rmarkdown,
+    shiny,
+    testthat,
+    tufte
+VignetteBuilder: 
+    knitr
+Remotes: 
+    jr-packages/jrData
+Encoding: UTF-8
 LazyData: true
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2
