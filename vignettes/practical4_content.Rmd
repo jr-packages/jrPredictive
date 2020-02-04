@@ -103,7 +103,11 @@ fiveStats = function(data, lev = NULL, model = NULL) {
 set.seed(9)
 data(Sonar, package = "mlbench")
 mod = train(Class ~ ., data = Sonar, method = customModel,
-    metric = "Dist", maximize = FALSE, tuneLength = 20, trControl = trainControl(method = "cv", classProbs = TRUE, summaryFunction = fiveStats))
+    metric = "Dist", maximize = FALSE, tuneLength = 20,
+    trControl = trainControl(
+      method = "cv", classProbs = TRUE, summaryFunction = fiveStats
+    )
+)
 ```
 
 
