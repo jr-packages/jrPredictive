@@ -2,7 +2,8 @@
 % Please edit documentation in R/validate.R
 \name{validate}
 \alias{validate}
-\title{A function for validating models for submission during the predictive analytics course}
+\title{A function for validating models for submission during the predictive
+analytics course}
 \usage{
 validate(model = NULL)
 }
@@ -13,5 +14,6 @@ validate(model = NULL)
 A model of type train
 }
 \description{
-A function for validating models for submission during the predictive analytics course
+A function for validating models for submission during the predictive
+analytics course
 }

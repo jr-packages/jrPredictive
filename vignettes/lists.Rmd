@@ -13,8 +13,8 @@ different) objects known as its components. For example, a list could consist of
 a numeric vector and a data frame. To create a list, we use the `list` function
 
 ```{r}
-lst = list(name="Fred", wife="Mary", children=3, 
-  child.ages=c(4,7,9))
+lst = list(name = "Fred", wife = "Mary", children = 3, 
+  child.ages = c(4, 7, 9))
 ``` 
 
 Components are always numbered. In the `lst` object above, we can access

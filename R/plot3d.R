@@ -1,4 +1,5 @@
-#' This is a function for assisting with 3d plots for the predictive analytics course
+#' This is a function for assisting with 3d plots for the predictive
+#' analytics course
 #'
 #' @param model A model object as returned by the caret::train function
 #' @param xvar The variable to be plotted as the x axis

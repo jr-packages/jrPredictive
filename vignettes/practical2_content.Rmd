@@ -16,7 +16,7 @@ data("FuelEconomy", package = "AppliedPredictiveModeling")
 
 
 ```{r}
-mLM = train(FE~EngDispl+NumCyl+NumGears, method = "lm", data = cars2010)
+mLM = train(FE~EngDispl + NumCyl + NumGears, method = "lm", data = cars2010)
 ```
 
 
@@ -26,7 +26,7 @@ Hint: The training error can be found by taking the square root of the average s
 
 ```{r}
 res = resid(mLM)
-(trainRMSE = sqrt(mean(res*res)))
+(trainRMSE = sqrt(mean(res * res)))
 ```
 
 - Re-train your model using the validation set approach to estimate a test RMSE, make your validation set equivalent to half of the entire data set.
@@ -36,12 +36,12 @@ res = resid(mLM)
 ## pick an index for samples
 ## floor just rounds down so we only try to sample a
 ## whole number
-index = sample(nrow(cars2010),floor(nrow(cars2010)/2))
+index = sample(nrow(cars2010), floor(nrow(cars2010) / 2))
 ## set up a train control object
 tcVS = trainControl(method = "cv", index = list(
-    Fold1 = (1:nrow(cars2010))[-index]), number = 1)
+    Fold1 = (seq_along(cars2010))[-index]), number = 1)
 ## train the model
-mLMVS = train(FE~EngDispl+NumCyl+NumGears, method = "lm",
+mLMVS = train(FE~EngDispl + NumCyl + NumGears, method = "lm",
     data = cars2010, trControl = tcVS)
 ```
 
@@ -66,11 +66,11 @@ tcKFOLD = trainControl(method = "cv", number = 10)
 tcBOOT = trainControl(method = "boot")
 
 # train the model
-mLMLOOCV = train(FE~EngDispl+NumCyl+NumGears, method = "lm",
+mLMLOOCV = train(FE~EngDispl + NumCyl + NumGears, method = "lm",
     data = cars2010, trControl = tcLOOCV)
-mLMKFOLD = train(FE~EngDispl+NumCyl+NumGears, method = "lm",
+mLMKFOLD = train(FE~EngDispl + NumCyl + NumGears, method = "lm",
     data = cars2010, trControl = tcKFOLD)
-mLMBOOT = train(FE~EngDispl+NumCyl+NumGears, method = "lm",
+mLMBOOT = train(FE~EngDispl + NumCyl + NumGears, method = "lm",
     data = cars2010, trControl = tcBOOT)
 ```
 
@@ -109,18 +109,18 @@ tc10 = trainControl(method = "cv", number = 10)
 tc15 = trainControl(method = "cv", number = 15)
 tc20 = trainControl(method = "cv", number = 20)
 # train the model using each
-mLM2 = train(FE~EngDispl+NumCyl+NumGears, method = "lm",
+mLM2 = train(FE~EngDispl + NumCyl + NumGears, method = "lm",
     data = cars2010, trControl = tc2)
-mLM5 = train(FE~EngDispl+NumCyl+NumGears, method = "lm",
+mLM5 = train(FE~EngDispl + NumCyl + NumGears, method = "lm",
     data = cars2010, trControl = tc5)
-mLM10 = train(FE~EngDispl+NumCyl+NumGears, method = "lm",
+mLM10 = train(FE~EngDispl + NumCyl + NumGears, method = "lm",
     data = cars2010, trControl = tc10)
-mLM15 = train(FE~EngDispl+NumCyl+NumGears, method = "lm",
+mLM15 = train(FE~EngDispl + NumCyl + NumGears, method = "lm",
     data = cars2010, trControl = tc15)
-mLM20 = train(FE~EngDispl+NumCyl+NumGears, method = "lm",
+mLM20 = train(FE~EngDispl + NumCyl + NumGears, method = "lm",
     data = cars2010, trControl = tc20)
 # use a data frame to store all of the relevant information
-(info = data.frame("Folds" = c(2,5,10,15,20),
+(info = data.frame("Folds" = c(2, 5, 10, 15, 20),
     "Time" = c(mLM2$times$everything[1],
         mLM5$times$everything[1],
         mLM10$times$everything[1],
@@ -156,17 +156,17 @@ The `diabetes` data set in the `lars` package contains measurements of a number 
 ```{r, echo = TRUE}
 ## load the data in 
 data(diabetes, package = "lars")
-diabetesdata = as.data.frame(cbind(diabetes$x,"y" = diabetes$y))
+diabetesdata = as.data.frame(cbind(diabetes$x, "y" = diabetes$y))
 ```
 
 - Try fitting a lasso, ridge and elastic net model using all of the main effects, squares of those, plus pairwise interactions of each of the predictors. Note that a square term does not make sense for a categorical variable (such as sex here). One way to create this formula for this data is
 
 ```{r, eval = TRUE, echo = TRUE}
 # extract the predictors for which squaring makes sense
-preds = setdiff(colnames(diabetesdata),c("sex","y"))
-square_terms = paste0("+ I(",preds,"^2)", collapse = " ")
+preds = setdiff(colnames(diabetesdata), c("sex", "y"))
+square_terms = paste0("+ I(", preds, "^2)", collapse = " ")
 other_terms = ".:."
-modelformula = as.formula(paste("y ~",other_terms,square_terms))
+modelformula = as.formula(paste("y ~", other_terms, square_terms))
 ```
 
 
@@ -188,16 +188,18 @@ Note, `fraction = 0` is the same as the null model.
 ```{r}
 # examine previous output then train over a finer grid near 
 # the better end
-mLASSOfine = train(modelformula,data = diabetesdata,
-    method = "lasso", tuneGrid = data.frame(fraction = seq(0.1,0.5,by = 0.05)))
+mLASSOfine = train(modelformula, data = diabetesdata,
+    method = "lasso", tuneGrid = data.frame(fraction =
+                                              seq(0.1, 0.5,
+                                                  by = 0.05)))
 mLASSOfine$results
 ```
 
 ```{r}
 # best still right down at the 0.1 end
-mLASSOfiner = train(modelformula,data = diabetesdata,
+mLASSOfiner = train(modelformula, data = diabetesdata,
     method = "lasso",
-    tuneGrid = data.frame(fraction = seq(0.01,0.15,by = 0.01)))
+    tuneGrid = data.frame(fraction = seq(0.01, 0.15, by = 0.01)))
 mLASSOfiner$results
 ```
 ```{r}
@@ -253,7 +255,7 @@ mLASSOfiner$bestTune
 ```{r, eval = FALSE, echo = TRUE}
 coef = predict(mLASSO$finalModel,
   mode = "fraction",
-  s = mLASSO$bestTune$fraction,# which ever fraction was chosen as best
+  s = mLASSO$bestTune$fraction, # which ever fraction was chosen as best
   type = "coefficients"
 )
 ```
@@ -271,7 +273,7 @@ sum(coefLASSO$coefficients != 0)
 ```
 
 ```{r, eval = FALSE}
-coefENET= predict(mENET$finalModel, mode = "fraction",
+coefENET = predict(mENET$finalModel, mode = "fraction",
         type = "coefficient", s = mENET$bestTune$fraction
         )
 sum(coefENET$coefficients != 0)
@@ -283,7 +285,7 @@ sum(coefENET$coefficients != 0)
 mPCR = train(modelformula, data = diabetesdata, method = "pcr",
              tuneGrid = data.frame(ncomp = 1:7))
 mPLS = train(modelformula, data = diabetesdata, method = "pls",
-             tuneGrid = data.frame(ncomp= 1:7))
+             tuneGrid = data.frame(ncomp = 1:7))
 getTrainPerf(mLASSOfiner)
 getTrainPerf(mRIDGE)
 getTrainPerf(mENET)
