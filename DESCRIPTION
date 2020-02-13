@@ -42,6 +42,7 @@ Imports:
     threejs
 Suggests:
     colorspace,
+    kableExtra,
     knitr,
     lintr,
     MASS,
