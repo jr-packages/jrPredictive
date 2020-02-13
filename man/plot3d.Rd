@@ -2,7 +2,8 @@
 % Please edit documentation in R/plot3d.R
 \name{plot3d}
 \alias{plot3d}
-\title{This is a function for assisting with 3d plots for the predictive analytics course}
+\title{This is a function for assisting with 3d plots for the predictive
+analytics course}
 \usage{
 plot3d(model, xvar, yvar, zvar, phi = 30, theta = 30, points = FALSE, ...)
 }
@@ -30,7 +31,8 @@ Note this can get messy when there are large numbers of points.}
 \item{...}{Other parameters to be passed to the persp function}
 }
 \description{
-This is a function for assisting with 3d plots for the predictive analytics course
+This is a function for assisting with 3d plots for the predictive
+analytics course
 }
 \examples{
 data(advertising)

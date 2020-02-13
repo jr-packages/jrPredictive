@@ -5,7 +5,7 @@
 #' @importFrom stats lowess
 #' @export
 mark = function(model) {
-  if (!inherits(model, "validated")){
+  if (!inherits(model, "validated")) {
     stop("Make sure to validate your model before trying to mark it")
   }
   env = new.env()

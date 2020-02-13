@@ -17,6 +17,5 @@ knitr::opts_chunk$set(echo = FALSE, results = "hide", fig.keep = "none")
 ```
 
 ```{r, child = 'practical3_content.Rmd'}
-
 ```
 

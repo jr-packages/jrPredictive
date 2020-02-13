@@ -63,7 +63,7 @@ Next we cluster the distance matrix, using the `hclust`
 function
 
 ```{r}
-fit = hclust(d, method="ward.D2") 
+fit = hclust(d, method = "ward.D2") 
 ```  
 
 The `ward.D2` method of clustering tends to find smaller,
@@ -71,9 +71,9 @@ more compact clusters. Again there are a variety of other clustering
 methods available. We can now plot the dendogram
 
 ```{r cluster_fig,fig.width=5, fig.height=5, echo=1}
-plot(fit, labels=rownames(d)) 
-groups = cutree(fit, k=3) 
-rect.hclust(fit, k=3, border="rosybrown") 
+plot(fit, labels = rownames(d)) 
+groups = cutree(fit, k = 3) 
+rect.hclust(fit, k = 3, border = "rosybrown") 
 ```  
 
 To highlight particular clusters, we use `cutree` and
@@ -116,7 +116,7 @@ space. To run the k-mean algorithm on the USA arrest data, we use the
 `kmeans` function:
 
 ```{r eval=FALSE}
-kmeans(USArrests, centers=3) 
+kmeans(USArrests, centers = 3) 
 ```
 
 Notice that we must specify the number of clusters. When the variables are measured on different scales, it is advisable
@@ -124,7 +124,7 @@ to standardise the variables. In the USA data, the scales between the
 variables are quite different:
 
 ```{r}
-apply(USArrests,2,mean) 
+apply(USArrests, 2, mean) 
 ```
 
 This means that when we run the the clustering algorithm,
@@ -142,7 +142,7 @@ Each variable now has mean zero and standard deviation
 one. We can rerun
 
 ```{r eval=FALSE}
-kmeans(std_usa, centers=3) 
+kmeans(std_usa, centers = 3) 
 ```
 
 We should also redo the hierarchical clustering using the

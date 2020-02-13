@@ -1,4 +1,5 @@
-#' A function for validating models for submission during the predictive analytics course
+#' A function for validating models for submission during the predictive
+#' analytics course
 #'
 #' @param model A model resulting from a call to train
 #' @return A model of type train

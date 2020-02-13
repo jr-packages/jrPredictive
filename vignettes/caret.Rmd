@@ -104,7 +104,7 @@ library("caret")
 library("pls")
 data(diamonds, package = "ggplot2")
 i = sample(nrow(diamonds), 1000) # some subset to help plotting
-diamonds = diamonds[i,]
+diamonds = diamonds[i, ]
 m = train(price~., method = "pls", data = diamonds, 
     tuneLength = 10)
 # a plot of model object gives us the resampling 
@@ -117,7 +117,7 @@ plot(varImp(m))
 # observed values
 plot(m$finalModel)
 ## a plot of residuals against fitted values
-plot(fitted.values(m),resid(m))
+plot(fitted.values(m), resid(m))
 ```
 
 There are lots of objects that are part of a train object which can be explored easily since each one is just a list
