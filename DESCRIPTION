@@ -1,7 +1,7 @@
 Type: Package
 Package: jrPredictive
 Title: Predictive Analytics by Jumping Rivers
-Version: 1.1.9
+Version: 1.1.10
 Authors@R: 
     c(person(given = "Jamie",
              family = "Owen",
@@ -42,6 +42,7 @@ Imports:
     threejs
 Suggests:
     colorspace,
+    kableExtra,
     knitr,
     lintr,
     MASS,
