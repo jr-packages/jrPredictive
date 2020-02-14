@@ -1,7 +1,7 @@
 Type: Package
 Package: jrPredictive
 Title: Predictive Analytics by Jumping Rivers
-Version: 1.1.10
+Version: 1.1.11
 Authors@R: 
     c(person(given = "Jamie",
              family = "Owen",
