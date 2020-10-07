@@ -27,7 +27,10 @@ server = function(input, output) {
           preProcess = c("center", "scale"))
   })
   output$plot = renderPlot({
-    jrPredictive::boundary_plot(modelfit(), df$x, df$z, df$y, lwd = 5, jitter = FALSE)
+    jrPredictive::boundary_plot(
+      modelfit(), df$x, df$z,
+      df$y, lwd = 5, jitter = FALSE
+    )
   })
 
 

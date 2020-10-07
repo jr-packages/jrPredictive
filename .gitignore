@@ -12,3 +12,15 @@
 vignettes/*.html
 vignettes/*.pdf
 .Rproj.user
+
+.RData
+.Ruserdata
+/*.tar.gz
+/*.Rcheck/
+.httr-oauth
+*_cache/
+/cache/
+*.utf8.md
+*.knit.md
+.Renviron
+.DS_Store
