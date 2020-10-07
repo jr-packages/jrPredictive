@@ -48,7 +48,7 @@ mean(predict(m1) == OJ$Purchase)
 ```{r}
 # with no model we essentially predict according to
 # proportion of observations in data
-probs = table(OJ$Purchase)/nrow(OJ)
+probs = table(OJ$Purchase) / nrow(OJ)
 preds = sample(levels(OJ$Purchase), prob = probs)
 mean(preds == OJ$Purchase)
 ```
@@ -59,8 +59,8 @@ mean(preds == OJ$Purchase)
 The `jrPredictive` package contains following code produces a plot of the decision boundary as seen in figure 1.
 
 ```{r, fig.cap = "Examining the decision boundary for orange juice brand purchases by price.", echo = TRUE, fig.keep="all", fig.margin=TRUE}
-boundary_plot(m1,OJ$PriceCH, OJ$PriceMM, OJ$Purchase,
-              xlab="Price CH", ylab="Price MM")
+boundary_plot(m1, OJ$PriceCH, OJ$PriceMM, OJ$Purchase,
+              xlab = "Price CH", ylab = "Price MM")
 ```
 
 
@@ -69,7 +69,8 @@ boundary_plot(m1,OJ$PriceCH, OJ$PriceMM, OJ$Purchase,
   - What happens if we add an interaction term? How does the boundary change?
 ```{r}
 # We now have a curved decision boundary.
-# There are two regions of where we would predict MM, bottom left, and a tiny one up in the top right.
+# There are two regions of where we would predict MM, bottom left,
+#and a tiny one up in the top right.
 ```
 - Try adding polynomial terms.
 
@@ -161,25 +162,26 @@ remove = findLinearCombos(model.matrix(Purchase~., data = OJ))
 (badvar = colnames(OJ)[remove$remove])
 ```
 ```{r}
-OJsub = OJ[,-(remove$remove)]
+OJsub = OJ[, - (remove$remove)]
 mLM = train(Purchase~., data = OJsub, method = "glm")
-mean(predict(mLM,OJsub) == OJsub$Purchase)
+mean(predict(mLM, OJsub) == OJsub$Purchase)
 ```
   - What are the values of sensitivity and specificity?
 ```{r}
 ## could use confusionMatrix
-(cmLM = confusionMatrix(predict(mLM,OJsub),OJsub$Purchase))
+(cmLM = confusionMatrix(predict(mLM, OJsub), OJsub$Purchase))
 ```
 ```{r}
 # or
-sensitivity(predict(mLM,OJsub),OJsub$Purchase)
+sensitivity(predict(mLM, OJsub), OJsub$Purchase)
 ```
 ```{r}
-specificity(predict(mLM,OJsub),OJsub$Purchase)
+specificity(predict(mLM, OJsub), OJsub$Purchase)
 ```
   - What does this mean?
 ```{r}
-#The model is fairly good at picking up both positive events, person buys CH, and negative events, MM.
+#The model is fairly good at picking up both positive events,
+#person buys CH, and negative events, MM.
 ```
 
 
@@ -205,7 +207,7 @@ library("pROC")
 
 ```{r, echo = TRUE}
 curve = roc(response = OJsub$Purchase,
-  predictor = predict(m_log, type = "prob")[,"CH"])
+  predictor = predict(m_log, type = "prob")[, "CH"])
 ## this makes CH the event of interest
 plot(curve, legacy.axes = TRUE)
 ```
@@ -222,10 +224,10 @@ plot(curve, legacy.axes = TRUE)
 mKNN = train(Purchase~., data = OJsub, method = "knn")
 mLDA = train(Purchase~., data = OJsub, method = "lda")
 mQDA = train(Purchase~., data = OJsub, method = "qda")
-cmKNN = confusionMatrix(predict(mKNN,OJsub),OJsub$Purchase)
-cmLDA = confusionMatrix(predict(mLDA,OJsub),OJsub$Purchase)
-cmQDA = confusionMatrix(predict(mQDA,OJsub),OJsub$Purchase)
-(info = data.frame(Model = c("logistic","knn","lda","qda"),
+cmKNN = confusionMatrix(predict(mKNN, OJsub), OJsub$Purchase)
+cmLDA = confusionMatrix(predict(mLDA, OJsub), OJsub$Purchase)
+cmQDA = confusionMatrix(predict(mQDA, OJsub), OJsub$Purchase)
+(info = data.frame(Model = c("logistic", "knn", "lda", "qda"),
            Accuracy = c(cmLM$overall["Accuracy"],
                cmKNN$overall["Accuracy"],
                cmLDA$overall["Accuracy"],
@@ -245,7 +247,8 @@ cmQDA = confusionMatrix(predict(mQDA,OJsub),OJsub$Purchase)
   - How does varying the number of nearest neighbours in a KNN affect the model fit?
   
 ```{r}
-#Accuracy increases at first with knn before then getting worse after a peak value of 9.
+#Accuracy increases at first with knn before then getting worse
+#after a peak value of 9.
 (mKNN2 = train(Purchase~., data = OJsub, method = "knn",
     tuneGrid = data.frame(k = 1:30)))
 ```
@@ -393,7 +396,7 @@ To add our function we need to make sure we mirror the structure of those includ
 
 
 ```{r, echo = TRUE}
-fourStats = function(data, lev = NULL, model = NULL){
+fourStats = function(data, lev = NULL, model = NULL) {
     # This code will use the area under the ROC curve and the
     # sensitivity and specificity values from the built in
     # twoClassSummary function
@@ -438,7 +441,7 @@ plot(mod)
   - Have a go at writing a function that will allow a regression model to be chosen by the absolute value of the largest residual and try using it to fit a couple of models.
 
 ```{r}
-maxabsres = function(data, lev = NULL, model = NULL){
+maxabsres = function(data, lev = NULL, model = NULL) {
     m = max(abs(data$obs - data$pred))
     return(c("Max" = m))
 }
